@@ -11,25 +11,54 @@
 Cyanea is **two things**:
 
 1. **Cyanea Labs** — A world-class Rust bioinformatics ecosystem (libraries, tools, standards)
-2. **Cyanea Platform** — A federated R&D platform built on top of that ecosystem
+2. **Cyanea Platform** — An **Elixir/Phoenix** federated R&D platform that consumes Labs
 
 We build the **foundations first**. Before the platform ships, we create the best open-source Rust libraries for life sciences—coherent, fast, GPU-accelerated, and universally deployable (native + WASM). These libraries benefit everyone, establish Cyanea as a trusted name, and give our platform unmatched performance.
 
+### How Labs + Platform Connect
+
+The Platform is **Elixir/Phoenix**. Rust libraries are consumed in two ways:
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     Cyanea Platform                              │
-│         (Federated R&D hub built on Cyanea Labs)                │
-├─────────────────────────────────────────────────────────────────┤
-│                      Cyanea Labs                                 │
-│    (Rust bioinformatics ecosystem — libraries & tools)          │
+│                         Browser                                  │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │              WASM (cyanea-wasm)                            │  │
+│  │   Sequence viewers, local parsing, client-side compute    │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│               Cyanea Platform (Elixir/Phoenix)                   │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │   LiveView │ Channels │ REST API │ Oban Jobs │ Contexts   │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                              │                                   │
+│                              ▼                                   │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │              NIFs via Rustler (cyanea-nif)                 │  │
+│  │   Heavy compute: parsing, alignment, hashing, compression │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Cyanea Labs (Rust)                          │
+│    Standalone libraries — used by Platform, CLI, Python, etc.   │
 │  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐       │
 │  │  cyanea-  │ │  cyanea-  │ │  cyanea-  │ │  cyanea-  │  ...  │
-│  │    seq    │ │   omics   │ │   chem    │ │    ml     │       │
+│  │    seq    │ │   align   │ │   omics   │ │    gpu    │       │
 │  └───────────┘ └───────────┘ └───────────┘ └───────────┘       │
-├─────────────────────────────────────────────────────────────────┤
-│              Cross-cutting: GPU (CUDA/Metal) + WASM             │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+| Integration | Mechanism | Use Case |
+|-------------|-----------|----------|
+| **Browser → Labs** | WASM (cyanea-wasm) | Client-side file preview, local parsing, interactive tools |
+| **Platform → Labs** | NIFs (Rustler) | Server-side parsing, checksums, QC, heavy compute |
+| **CLI → Labs** | Native Rust | Command-line tools, batch processing |
+| **Python → Labs** | PyO3 | Data science workflows, Jupyter integration |
 
 ### The Problem
 
@@ -435,16 +464,36 @@ Make libraries accessible everywhere:
 
 ### Relationship to Platform
 
-Cyanea Labs powers the Cyanea Platform:
+The **Elixir/Phoenix platform** consumes Cyanea Labs via two paths:
 
-| Platform Feature | Cyanea Labs Library |
-|------------------|---------------------|
-| File previews (FASTA viewer) | cyanea-seq, cyanea-io |
+#### Server-Side (NIFs via Rustler)
+
+Heavy compute runs on the Elixir backend through Native Implemented Functions:
+
+| Platform Feature | Cyanea Labs via NIFs |
+|------------------|----------------------|
+| File upload processing | cyanea-io (format detection, validation) |
+| Content hashing | cyanea-core (SHA256, BLAKE3) |
 | QC validation | cyanea-seq, cyanea-stats |
-| Content hashing | cyanea-core |
-| Browser-based tools | cyanea-wasm |
-| Pipeline execution | All libraries via NIFs |
-| Search indexing | cyanea-seq (k-mers, embeddings) |
+| Sequence indexing | cyanea-seq (k-mers, FM-index) |
+| Alignment jobs | cyanea-align (batch alignment) |
+| Compression | cyanea-core (zstd) |
+
+#### Client-Side (WASM in Browser)
+
+Interactive tools run directly in the browser without server round-trips:
+
+| Platform Feature | Cyanea Labs via WASM |
+|------------------|----------------------|
+| FASTA/FASTQ viewer | cyanea-seq, cyanea-io |
+| Sequence search | cyanea-seq (pattern matching) |
+| Local file preview | cyanea-io (parse before upload) |
+| Interactive alignment | cyanea-align (small sequences) |
+| Client-side validation | cyanea-seq (format checks) |
+
+#### Architecture Principle
+
+> **Compute where it makes sense**: Use WASM for instant, interactive features (no latency). Use NIFs for heavy batch processing (server resources, GPU access).
 
 ### Success Metrics (Libraries)
 
@@ -487,6 +536,8 @@ Cyanea Labs powers the Cyanea Platform:
 
 ### Cyanea Platform (Elixir/Phoenix)
 
+The platform is **100% Elixir/Phoenix**. Rust is only used for compute via NIFs and WASM.
+
 | Layer | Technology | Why |
 |-------|------------|-----|
 | **Language** | Elixir 1.17+ | Concurrency, fault tolerance, LiveView |
@@ -495,7 +546,8 @@ Cyanea Labs powers the Cyanea Platform:
 | **Database** | PostgreSQL 16 | JSONB, event sourcing friendly, proven |
 | **File Storage** | S3-compatible | AWS S3, MinIO (self-hosted), R2 |
 | **Search** | Meilisearch 1.11+ | Fast, typo-tolerant, self-hostable |
-| **Compute** | Cyanea Labs (Rust NIFs) | Native performance via Rustler |
+| **Server Compute** | Cyanea Labs via Rustler NIFs | Heavy parsing, alignment, hashing |
+| **Client Compute** | Cyanea Labs via WASM | Browser-based tools, previews |
 | **Auth** | ORCID OAuth + Guardian | Researcher identity + JWT |
 
 ### Why Rust for Libraries?
@@ -548,24 +600,35 @@ Prefer append-only history for artifacts + lineage:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Browser                                   │
-│              Phoenix LiveView + Tailwind CSS                     │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  Phoenix LiveView + Tailwind CSS                            ││
+│  ├─────────────────────────────────────────────────────────────┤│
+│  │  WASM Module (cyanea-wasm)                                  ││
+│  │  └─ Client-side: file preview, sequence viewer, local parse ││
+│  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Phoenix Application                           │
+│             Cyanea Platform (Elixir/Phoenix)                     │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │  LiveView   │  │  Channels   │  │     REST API            │  │
 │  │  (UI)       │  │  (Realtime) │  │  (Integrations + Fed)   │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
 ├─────────────────────────────────────────────────────────────────┤
-│                      Business Logic                              │
+│                      Business Logic (Elixir)                     │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │  Contexts   │  │    Oban     │  │    Rust NIFs            │  │
-│  │  (Domain)   │  │  (Jobs)     │  │  (Performance)          │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+│  │  Contexts   │  │    Oban     │  │   Cyanea.Native         │  │
+│  │  (Domain)   │  │  (Jobs)     │  │   (NIF wrappers)        │  │
+│  └─────────────┘  └─────────────┘  └───────────┬─────────────┘  │
+│                                                 │                │
+│                                                 ▼                │
+│                                    ┌─────────────────────────┐  │
+│                                    │  Rustler NIFs           │  │
+│                                    │  └─ calls cyanea-* libs │  │
+│                                    └─────────────────────────┘  │
 ├─────────────────────────────────────────────────────────────────┤
-│                     Control Plane                                │
+│                     Control Plane (Elixir)                       │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │  Artifacts  │  │  Lineage    │  │    Federation           │  │
 │  │  + Events   │  │  Graph      │  │    Sync Engine          │  │
@@ -658,12 +721,14 @@ labs/
         └── runtime.rs             # Browser runtime utilities
 ```
 
-### Platform Structure (Elixir)
+### Platform Structure (Elixir/Phoenix)
+
+The platform is **pure Elixir/Phoenix**. Rust is only in `native/` as thin NIF wrappers.
 
 ```
 platform/
 ├── lib/
-│   ├── cyanea/                    # Business logic (contexts)
+│   ├── cyanea/                    # Business logic (Elixir contexts)
 │   │   ├── accounts/              # Users, authentication, ORCID
 │   │   ├── organizations/         # Orgs, teams, memberships
 │   │   ├── projects/              # Projects (artifact collections)
@@ -674,25 +739,28 @@ platform/
 │   │   ├── search/                # Meilisearch integration
 │   │   ├── application.ex         # OTP application
 │   │   ├── repo.ex                # Ecto repo
-│   │   └── native.ex              # Rust NIF bindings (wraps labs/)
-│   └── cyanea_web/                # Web layer
+│   │   └── native.ex              # Elixir API for NIFs
+│   └── cyanea_web/                # Web layer (Phoenix)
 │       ├── live/                  # LiveView pages
 │       ├── components/            # UI components
 │       ├── controllers/           # API controllers
 │       ├── endpoint.ex
 │       └── router.ex
 ├── native/
-│   └── cyanea_nif/                # Thin NIF wrappers around labs/
-│       ├── Cargo.toml             # Depends on cyanea-* crates
+│   └── cyanea_nif/                # THIN Rust NIF wrappers (not business logic)
+│       ├── Cargo.toml             # Depends on labs/ crates
 │       └── src/
-│           └── lib.rs             # Rustler NIF exports
+│           └── lib.rs             # Rustler exports → calls cyanea-seq, etc.
 ├── priv/
 │   ├── repo/migrations/           # Database migrations
-│   └── static/                    # Static assets
-├── assets/                        # Frontend assets (Tailwind, JS)
+│   └── static/
+│       └── wasm/                  # Pre-built WASM from labs/cyanea-wasm
+├── assets/                        # Frontend (Tailwind, JS, WASM loader)
 ├── config/                        # Configuration
-└── test/                          # Tests
+└── test/                          # Tests (ExUnit)
 ```
+
+**Key principle:** All business logic lives in Elixir. NIFs are pure compute (parsing, hashing, alignment). No Rust in the hot path for web requests except when explicitly calling compute functions.
 
 ---
 

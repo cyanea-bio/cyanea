@@ -55,10 +55,18 @@ config :ex_aws, :s3,
   host: "localhost",
   port: 9002
 
+# ORCID OAuth sandbox
+config :ueberauth, Ueberauth.Strategy.Orcid.OAuth,
+  client_id: "APP-XXXXXXXXXXXXXXXX",
+  client_secret: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  site: "https://sandbox.orcid.org"
+
 # Meilisearch for local development
-config :cyanea, :meilisearch,
-  url: "http://localhost:7700",
+config :meilisearch,
+  endpoint: "http://localhost:7700",
   api_key: "dev_master_key"
+
+config :cyanea, :search_enabled, true
 
 # Disable Oban in test
 config :cyanea, Oban, testing: :inline

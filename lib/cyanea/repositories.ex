@@ -118,8 +118,13 @@ defmodule Cyanea.Repositories do
     |> Repository.changeset(attrs)
     |> Repo.insert()
     |> case do
-      {:ok, repo} -> {:ok, Repo.preload(repo, [:owner, :organization])}
-      error -> error
+      {:ok, repo} ->
+        repo = Repo.preload(repo, [:owner, :organization])
+        if repo.visibility == "public", do: Cyanea.Search.index_repository(repo)
+        {:ok, repo}
+
+      error ->
+        error
     end
   end
 
@@ -130,12 +135,28 @@ defmodule Cyanea.Repositories do
     repository
     |> Repository.changeset(attrs)
     |> Repo.update()
+    |> case do
+      {:ok, repo} ->
+        repo = Repo.preload(repo, [:owner, :organization])
+
+        if repo.visibility == "public" do
+          Cyanea.Search.index_repository(repo)
+        else
+          Cyanea.Search.delete_repository(repo.id)
+        end
+
+        {:ok, repo}
+
+      error ->
+        error
+    end
   end
 
   @doc """
   Deletes a repository.
   """
   def delete_repository(%Repository{} = repository) do
+    Cyanea.Search.delete_repository(repository.id)
     Repo.delete(repository)
   end
 

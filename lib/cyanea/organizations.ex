@@ -7,6 +7,8 @@ defmodule Cyanea.Organizations do
   alias Cyanea.Repo
   alias Cyanea.Organizations.{Organization, Membership}
 
+  @role_levels %{"owner" => 4, "admin" => 3, "member" => 2, "viewer" => 1}
+
   ## Organizations
 
   @doc """
@@ -34,6 +36,13 @@ defmodule Cyanea.Organizations do
   """
   def get_organization_by_slug(slug) when is_binary(slug) do
     Repo.get_by(Organization, slug: String.downcase(slug))
+  end
+
+  @doc """
+  Returns a changeset for tracking organization changes.
+  """
+  def change_organization(%Organization{} = org, attrs \\ %{}) do
+    Organization.changeset(org, attrs)
   end
 
   @doc """
@@ -66,6 +75,35 @@ defmodule Cyanea.Organizations do
     |> Repo.update()
   end
 
+  @doc """
+  Deletes an organization and all associated data.
+  """
+  def delete_organization(%Organization{} = organization) do
+    Repo.delete(organization)
+  end
+
+  ## Authorization
+
+  @doc """
+  Checks if a user has at least the given role in an organization.
+  Returns `{:ok, membership}` or `{:error, :unauthorized}`.
+  """
+  def authorize(user_id, org_id, minimum_role) do
+    case get_membership(user_id, org_id) do
+      nil ->
+        {:error, :unauthorized}
+
+      membership ->
+        if role_level(membership.role) >= role_level(minimum_role) do
+          {:ok, membership}
+        else
+          {:error, :unauthorized}
+        end
+    end
+  end
+
+  defp role_level(role), do: Map.get(@role_levels, role, 0)
+
   ## Memberships
 
   @doc """
@@ -87,5 +125,60 @@ defmodule Cyanea.Organizations do
       order_by: [asc: u.username]
     )
     |> Repo.all()
+  end
+
+  @doc """
+  Adds a member to an organization.
+  """
+  def add_member(org_id, user_id, role \\ "member") do
+    %Membership{}
+    |> Membership.changeset(%{organization_id: org_id, user_id: user_id, role: role})
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a membership's role. Guards against removing the last owner.
+  """
+  def update_membership_role(%Membership{} = membership, new_role) do
+    if membership.role == "owner" and new_role != "owner" do
+      owner_count = count_owners(membership.organization_id)
+
+      if owner_count <= 1 do
+        {:error, :last_owner}
+      else
+        membership
+        |> Membership.changeset(%{role: new_role})
+        |> Repo.update()
+      end
+    else
+      membership
+      |> Membership.changeset(%{role: new_role})
+      |> Repo.update()
+    end
+  end
+
+  @doc """
+  Removes a member from an organization. Guards against removing the last owner.
+  """
+  def remove_member(%Membership{} = membership) do
+    if membership.role == "owner" do
+      owner_count = count_owners(membership.organization_id)
+
+      if owner_count <= 1 do
+        {:error, :last_owner}
+      else
+        Repo.delete(membership)
+      end
+    else
+      Repo.delete(membership)
+    end
+  end
+
+  defp count_owners(org_id) do
+    from(m in Membership,
+      where: m.organization_id == ^org_id and m.role == "owner",
+      select: count(m.id)
+    )
+    |> Repo.one()
   end
 end

@@ -2,7 +2,6 @@ defmodule Cyanea.Accounts do
   @moduledoc """
   The Accounts context - user management and authentication.
   """
-  import Ecto.Query
   alias Cyanea.Repo
   alias Cyanea.Accounts.{User, UserToken}
 
@@ -39,6 +38,14 @@ defmodule Cyanea.Accounts do
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Cyanea.Search.index_user(user)
+        {:ok, user}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -47,12 +54,55 @@ defmodule Cyanea.Accounts do
   def find_or_create_oauth_user(attrs) do
     case get_user_by_orcid(attrs.orcid_id) do
       nil ->
-        %User{}
-        |> User.oauth_changeset(attrs)
-        |> Repo.insert()
+        # Check if email matches existing user — auto-link (ORCID is trusted)
+        existing = if attrs[:email], do: get_user_by_email(attrs.email)
+
+        if existing do
+          link_orcid(existing, attrs.orcid_id)
+        else
+          %User{}
+          |> User.oauth_changeset(attrs)
+          |> Repo.insert()
+        end
 
       user ->
         {:ok, user}
+    end
+  end
+
+  @doc """
+  Links an ORCID iD to an existing user.
+  Returns `{:error, :already_linked}` if user already has an ORCID,
+  `{:error, :orcid_taken}` if the ORCID belongs to another user.
+  """
+  def link_orcid(%User{} = user, orcid_id) do
+    cond do
+      user.orcid_id == orcid_id ->
+        {:error, :already_linked}
+
+      user.orcid_id != nil ->
+        {:error, :already_linked}
+
+      get_user_by_orcid(orcid_id) != nil ->
+        {:error, :orcid_taken}
+
+      true ->
+        user
+        |> Ecto.Changeset.change(orcid_id: orcid_id)
+        |> Repo.update()
+    end
+  end
+
+  @doc """
+  Unlinks ORCID from user. Fails if user has no password set (would lock them out).
+  """
+  def unlink_orcid(%User{} = user) do
+    if is_nil(user.password_hash) do
+      {:error, :no_password}
+    else
+      user
+      |> Ecto.Changeset.change(orcid_id: nil)
+      |> Repo.update()
     end
   end
 
@@ -82,6 +132,14 @@ defmodule Cyanea.Accounts do
     user
     |> User.changeset(attrs)
     |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        Cyanea.Search.index_user(user)
+        {:ok, user}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -150,7 +208,7 @@ defmodule Cyanea.Accounts do
 
   defp confirm_user_multi(user) do
     Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, User.changeset(user, %{confirmed_at: DateTime.utc_now()}))
+    |> Ecto.Multi.update(:user, Ecto.Changeset.change(user, confirmed_at: DateTime.truncate(DateTime.utc_now(), :second)))
     |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["confirm"]))
   end
 

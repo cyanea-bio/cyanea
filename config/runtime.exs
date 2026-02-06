@@ -60,12 +60,14 @@ if config_env() == :prod do
   end
 
   # Meilisearch configuration
-  config :cyanea, :meilisearch,
-    url: System.get_env("MEILISEARCH_URL") || "http://localhost:7700",
+  config :meilisearch,
+    endpoint: System.get_env("MEILISEARCH_URL") || "http://localhost:7700",
     api_key: System.get_env("MEILISEARCH_API_KEY")
 
+  config :cyanea, :search_enabled, true
+
   # ORCID OAuth configuration
-  config :ueberauth, Ueberauth.Strategy.ORCID.OAuth,
+  config :ueberauth, Ueberauth.Strategy.Orcid.OAuth,
     client_id: System.get_env("ORCID_CLIENT_ID"),
     client_secret: System.get_env("ORCID_CLIENT_SECRET")
 end

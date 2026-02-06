@@ -60,6 +60,15 @@ config :cyanea, Oban,
     {Oban.Plugins.Cron, crontab: []}
   ]
 
+# S3 bucket
+config :cyanea, :s3_bucket, "cyanea-dev"
+
+# Ueberauth OAuth providers
+config :ueberauth, Ueberauth,
+  providers: [
+    orcid: {Ueberauth.Strategy.Orcid, []}
+  ]
+
 # Guardian configuration
 config :cyanea, Cyanea.Guardian,
   issuer: "cyanea",

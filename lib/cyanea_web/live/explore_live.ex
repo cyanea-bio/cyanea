@@ -2,6 +2,7 @@ defmodule CyaneaWeb.ExploreLive do
   use CyaneaWeb, :live_view
 
   alias Cyanea.Repositories
+  alias Cyanea.Search
 
   @impl true
   def mount(_params, _session, socket) do
@@ -11,28 +12,69 @@ defmodule CyaneaWeb.ExploreLive do
      assign(socket,
        page_title: "Explore",
        repositories: repositories,
-       search_query: ""
+       search_query: "",
+       active_tab: :repositories,
+       user_results: []
      )}
   end
 
   @impl true
   def handle_event("search", %{"query" => query}, socket) do
-    repositories = Repositories.list_public_repositories()
+    if query == "" do
+      repositories = Repositories.list_public_repositories()
+      {:noreply, assign(socket, repositories: repositories, search_query: "", user_results: [])}
+    else
+      {repositories, user_results} = perform_search(query)
+      {:noreply, assign(socket, repositories: repositories, search_query: query, user_results: user_results)}
+    end
+  end
 
-    filtered =
-      if query == "" do
-        repositories
-      else
-        q = String.downcase(query)
+  def handle_event("switch-tab", %{"tab" => tab}, socket) do
+    {:noreply, assign(socket, active_tab: String.to_existing_atom(tab))}
+  end
 
-        Enum.filter(repositories, fn repo ->
-          String.contains?(String.downcase(repo.name), q) ||
-            (repo.description && String.contains?(String.downcase(repo.description), q)) ||
-            Enum.any?(repo.tags || [], &String.contains?(String.downcase(&1), q))
-        end)
+  defp perform_search(query) do
+    repo_results =
+      case Search.search_repositories(query, filter: "visibility = public") do
+        {:ok, %{"hits" => hits}} when hits != [] ->
+          # Load full records from DB by IDs
+          ids = Enum.map(hits, & &1["id"])
+          load_repositories_by_ids(ids)
+
+        _ ->
+          # Fallback to DB search
+          db_fallback_search(query)
       end
 
-    {:noreply, assign(socket, repositories: filtered, search_query: query)}
+    user_results =
+      case Search.search_users(query) do
+        {:ok, %{"hits" => hits}} -> hits
+        _ -> []
+      end
+
+    {repo_results, user_results}
+  end
+
+  defp load_repositories_by_ids(ids) do
+    import Ecto.Query
+
+    from(r in Cyanea.Repositories.Repository,
+      where: r.id in ^ids,
+      where: r.visibility == "public",
+      preload: [:owner, :organization]
+    )
+    |> Cyanea.Repo.all()
+  end
+
+  defp db_fallback_search(query) do
+    repositories = Repositories.list_public_repositories()
+    q = String.downcase(query)
+
+    Enum.filter(repositories, fn repo ->
+      String.contains?(String.downcase(repo.name), q) ||
+        (repo.description && String.contains?(String.downcase(repo.description), q)) ||
+        Enum.any?(repo.tags || [], &String.contains?(String.downcase(&1), q))
+    end)
   end
 
   @impl true
@@ -52,7 +94,7 @@ defmodule CyaneaWeb.ExploreLive do
               type="text"
               name="query"
               value={@search_query}
-              placeholder="Search repositories..."
+              placeholder="Search repositories and users..."
               phx-debounce="300"
               class="block w-full rounded-lg border-slate-300 pl-10 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm dark:border-slate-600 dark:bg-slate-800"
             />
@@ -60,7 +102,38 @@ defmodule CyaneaWeb.ExploreLive do
         </form>
       </div>
 
-      <div class="mt-8 space-y-4">
+      <%!-- Tabs --%>
+      <div :if={@search_query != ""} class="mt-6 flex gap-4 border-b border-slate-200 dark:border-slate-700">
+        <button
+          phx-click="switch-tab"
+          phx-value-tab="repositories"
+          class={[
+            "border-b-2 px-1 pb-3 text-sm font-medium",
+            if(@active_tab == :repositories,
+              do: "border-cyan-500 text-cyan-600",
+              else: "border-transparent text-slate-500 hover:text-slate-700"
+            )
+          ]}
+        >
+          Repositories (<%= length(@repositories) %>)
+        </button>
+        <button
+          phx-click="switch-tab"
+          phx-value-tab="users"
+          class={[
+            "border-b-2 px-1 pb-3 text-sm font-medium",
+            if(@active_tab == :users,
+              do: "border-cyan-500 text-cyan-600",
+              else: "border-transparent text-slate-500 hover:text-slate-700"
+            )
+          ]}
+        >
+          Users (<%= length(@user_results) %>)
+        </button>
+      </div>
+
+      <%!-- Repository results --%>
+      <div :if={@active_tab == :repositories} class="mt-8 space-y-4">
         <div
           :for={repo <- @repositories}
           class="rounded-xl border border-slate-200 bg-white p-6 transition hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"
@@ -109,6 +182,31 @@ defmodule CyaneaWeb.ExploreLive do
           class="py-12 text-center text-slate-500 dark:text-slate-400"
         >
           No repositories found.
+        </p>
+      </div>
+
+      <%!-- User results --%>
+      <div :if={@active_tab == :users && @search_query != ""} class="mt-8 space-y-4">
+        <div
+          :for={user <- @user_results}
+          class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
+        >
+          <img
+            src={"https://api.dicebear.com/7.x/initials/svg?seed=#{user["username"]}"}
+            alt={user["username"]}
+            class="h-10 w-10 rounded-full"
+          />
+          <div>
+            <.link navigate={~p"/#{user["username"]}"} class="font-semibold text-cyan-600 hover:underline">
+              <%= user["name"] || user["username"] %>
+            </.link>
+            <p class="text-xs text-slate-500">@<%= user["username"] %></p>
+            <p :if={user["affiliation"] && user["affiliation"] != ""} class="text-xs text-slate-400"><%= user["affiliation"] %></p>
+          </div>
+        </div>
+
+        <p :if={@user_results == []} class="py-12 text-center text-slate-500 dark:text-slate-400">
+          No users found.
         </p>
       </div>
     </div>

@@ -107,6 +107,15 @@ defmodule CyaneaWeb.DashboardLive do
           <p :if={@organizations == []} class="mt-3 text-sm text-slate-500">
             You're not a member of any organizations yet.
           </p>
+          <div class="mt-3">
+            <.link
+              navigate={~p"/organizations/new"}
+              class="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 hover:text-cyan-700"
+            >
+              <.icon name="hero-plus" class="h-4 w-4" />
+              New organization
+            </.link>
+          </div>
         </div>
 
         <%!-- Activity placeholder --%>

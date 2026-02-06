@@ -16,7 +16,30 @@ defmodule Cyanea.Application do
     ]
 
     opts = [strategy: :one_for_one, name: Cyanea.Supervisor]
-    Supervisor.start_link(children, opts)
+    result = Supervisor.start_link(children, opts)
+
+    # Run startup tasks (S3 bucket, search indexes) after supervisor is up
+    Task.start(fn -> run_startup_tasks() end)
+
+    result
+  end
+
+  defp run_startup_tasks do
+    if Application.get_env(:cyanea, :ensure_s3_bucket) do
+      try do
+        Cyanea.Storage.ensure_bucket!()
+      rescue
+        e -> require Logger; Logger.warning("Failed to ensure S3 bucket: #{inspect(e)}")
+      end
+    end
+
+    if Application.get_env(:cyanea, :search_enabled, false) do
+      try do
+        Cyanea.Search.setup_indexes()
+      rescue
+        e -> require Logger; Logger.warning("Failed to setup search indexes: #{inspect(e)}")
+      end
+    end
   end
 
   @impl true

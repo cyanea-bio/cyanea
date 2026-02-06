@@ -23,3 +23,25 @@ config :phoenix, :plug_init_mode, :runtime
 
 # Disable Oban during tests
 config :cyanea, Oban, testing: :manual
+
+# S3 configuration for tests (MinIO)
+config :ex_aws,
+  access_key_id: "minioadmin",
+  secret_access_key: "minioadmin",
+  region: "us-east-1"
+
+config :ex_aws, :s3,
+  scheme: "http://",
+  host: "localhost",
+  port: 9002
+
+config :cyanea, :s3_bucket, "cyanea-test"
+config :cyanea, :ensure_s3_bucket, true
+
+# Disable search in tests
+config :cyanea, :search_enabled, false
+
+# ORCID OAuth dummy config for tests
+config :ueberauth, Ueberauth.Strategy.Orcid.OAuth,
+  client_id: "test-client-id",
+  client_secret: "test-client-secret"

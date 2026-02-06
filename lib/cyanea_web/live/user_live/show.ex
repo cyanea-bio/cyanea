@@ -18,14 +18,20 @@ defmodule CyaneaWeb.UserLive.Show do
              |> redirect(to: ~p"/explore")}
 
           org ->
+            current_user = socket.assigns[:current_user]
             repos = Repositories.list_org_repositories(org.id, visibility: "public")
             members = Organizations.list_members(org.id)
+
+            org_admin =
+              current_user &&
+                Organizations.authorize(current_user.id, org.id, "admin") != {:error, :unauthorized}
 
             {:ok,
              assign(socket,
                page_title: org.name,
                profile_type: :organization,
                org: org,
+               org_admin: org_admin,
                user: nil,
                repositories: repos,
                members: members,
@@ -52,6 +58,7 @@ defmodule CyaneaWeb.UserLive.Show do
            profile_type: :user,
            user: user,
            org: nil,
+           org_admin: false,
            repositories: repos,
            organizations: orgs,
            members: [],
@@ -179,6 +186,14 @@ defmodule CyaneaWeb.UserLive.Show do
         <%= @org.name %>
       </h1>
       <p class="text-sm text-slate-500">@<%= @org.slug %></p>
+      <div :if={@org_admin} class="mt-2 flex gap-2">
+        <.link navigate={~p"/organizations/#{@org.slug}/settings"} class="text-xs text-slate-500 hover:text-cyan-600">
+          <.icon name="hero-cog-6-tooth" class="h-4 w-4" /> Settings
+        </.link>
+        <.link navigate={~p"/organizations/#{@org.slug}/members"} class="text-xs text-slate-500 hover:text-cyan-600">
+          <.icon name="hero-user-group" class="h-4 w-4" /> Members
+        </.link>
+      </div>
       <p :if={@org.description} class="mt-3 text-sm text-slate-600 dark:text-slate-400">
         <%= @org.description %>
       </p>

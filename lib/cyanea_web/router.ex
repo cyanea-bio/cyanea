@@ -23,6 +23,10 @@ defmodule CyaneaWeb.Router do
 
     post "/login", UserSessionController, :create
     delete "/logout", UserSessionController, :delete
+
+    # ORCID OAuth
+    get "/orcid", OAuthCallbackController, :request
+    get "/orcid/callback", OAuthCallbackController, :callback
   end
 
   # Auth routes (redirect if already logged in)
@@ -45,7 +49,19 @@ defmodule CyaneaWeb.Router do
       live "/new", RepositoryLive.New, :new
       live "/settings", SettingsLive, :edit
       live "/dashboard", DashboardLive, :index
+
+      # Organization management
+      live "/organizations/new", OrganizationLive.New, :new
+      live "/organizations/:slug/settings", OrganizationLive.Settings, :edit
+      live "/organizations/:slug/members", OrganizationLive.Members, :index
     end
+  end
+
+  # File downloads (public scope, access checked in controller)
+  scope "/", CyaneaWeb do
+    pipe_through :browser
+
+    get "/files/:id/download", FileController, :download
   end
 
   # Public routes

@@ -3,7 +3,8 @@ erlang = "28.3.1"
 elixir = "1.19.5-otp-28"
 
 [env]
-MIX_ENV = "dev"
+# MIX_ENV defaults to "dev" in Mix — no override needed.
+# Do NOT set MIX_ENV here; it prevents MIX_ENV=test from working.
 
 # ── Services ─────────────────────────────────────────────────────
 # Docker Compose manages PostgreSQL, MinIO, and Meilisearch.

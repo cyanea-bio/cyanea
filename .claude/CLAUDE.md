@@ -37,7 +37,7 @@ The Platform is **Elixir/Phoenix**. Rust libraries are consumed in two ways:
 │                              │                                   │
 │                              ▼                                   │
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │              NIFs via Rustler (cyanea-nif)                 │  │
+│  │           NIFs via Rustler (cyanea_native)                 │  │
 │  │   Heavy compute: parsing, alignment, hashing, compression │  │
 │  └───────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
@@ -646,118 +646,127 @@ Prefer append-only history for artifacts + lineage:
 
 ## Project Structure
 
-### Monorepo Overview
+### Multi-Repo Layout
+
+The project is split across **three separate git repositories** under the `cyanea-io` GitHub org, cloned side-by-side into a shared parent directory:
 
 ```
-cyanea-io/
-├── labs/                          # Cyanea Labs: Rust bioinformatics ecosystem
-│   ├── cyanea-core/               # Shared primitives, traits, errors
-│   ├── cyanea-seq/                # Sequence I/O and manipulation
-│   ├── cyanea-align/              # Sequence alignment (CPU + GPU)
-│   ├── cyanea-omics/              # Omics data structures
-│   ├── cyanea-stats/              # Statistical methods
-│   ├── cyanea-io/                 # File format parsers
-│   ├── cyanea-gpu/                # GPU abstraction (CUDA/Metal)
-│   ├── cyanea-wasm/               # WASM bindings + browser runtime
-│   ├── cyanea-py/                 # Python bindings (PyO3)
-│   └── Cargo.toml                 # Workspace manifest
-├── platform/                      # Cyanea Platform: Elixir/Phoenix app
-│   ├── lib/
-│   │   ├── cyanea/                # Business logic (contexts)
-│   │   └── cyanea_web/            # Web layer
-│   ├── native/                    # Rust NIFs (thin wrappers around labs/)
-│   ├── priv/
-│   ├── assets/
-│   ├── config/
-│   └── test/
-└── www/                           # Marketing website (Zola)
+cyanea-io/                             # Parent directory (NOT a git repo)
+├── labs/                              # Git repo: github.com/cyanea-io/labs
+│   ├── Cargo.toml                     #   Rust Cargo workspace (13 crates)
+│   ├── cyanea-core/                   #   Shared primitives, traits, errors
+│   ├── cyanea-seq/                    #   Sequence I/O and manipulation
+│   ├── cyanea-align/                  #   Sequence alignment (CPU + GPU)
+│   ├── cyanea-omics/                  #   Omics data structures
+│   ├── cyanea-stats/                  #   Statistical methods
+│   ├── cyanea-io/                     #   File format parsers
+│   ├── cyanea-ml/                     #   ML primitives for bio
+│   ├── cyanea-chem/                   #   Chemistry / small molecules
+│   ├── cyanea-struct/                 #   Protein/nucleic acid 3D structures
+│   ├── cyanea-phylo/                  #   Phylogenetics and trees
+│   ├── cyanea-gpu/                    #   GPU compute abstraction (CUDA/Metal)
+│   ├── cyanea-wasm/                   #   WASM bindings + browser runtime
+│   └── cyanea-py/                     #   Python bindings (PyO3)
+├── cyanea/                            # Git repo: github.com/cyanea-io/cyanea
+│   ├── lib/cyanea/                    #   Elixir business logic (contexts)
+│   ├── lib/cyanea_web/                #   Phoenix web layer
+│   ├── native/cyanea_native/          #   Rust NIF crate (depends on labs/ via path)
+│   ├── config/                        #   Phoenix configuration
+│   ├── priv/                          #   Migrations, static assets
+│   ├── assets/                        #   Frontend (Tailwind, JS)
+│   └── test/                          #   ExUnit tests
+└── www/                               # Git repo: github.com/cyanea-io/www
+    └── ...                            #   Marketing website (Zola)
 ```
+
+**Important:** The NIF crate (`cyanea/native/cyanea_native/`) references labs crates via relative paths (e.g. `path = "../../../labs/cyanea-core"`), so `labs/` and `cyanea/` must be siblings in the same parent directory.
 
 ### Labs Structure (Rust)
 
 ```
-labs/
-├── Cargo.toml                     # Workspace: all crates
+labs/                                  # github.com/cyanea-io/labs
+├── Cargo.toml                         # Workspace manifest (13 members)
 ├── cyanea-core/
 │   ├── Cargo.toml
 │   └── src/
 │       ├── lib.rs
-│       ├── traits.rs              # Sequence, Annotation, Scored, etc.
-│       ├── error.rs               # Rich error types
-│       ├── hash.rs                # Content addressing (SHA256, BLAKE3)
-│       └── mmap.rs                # Memory-mapped file utilities
+│       ├── error.rs                   # CyaneaError enum (thiserror 2.x)
+│       ├── traits.rs                  # Sequence, ContentAddressable, Compressible
+│       ├── hash.rs                    # SHA-256 content addressing
+│       ├── compress.rs                # zstd + gzip (std feature only)
+│       └── mmap.rs                    # Memory-mapped file access (std feature only)
 ├── cyanea-seq/
 │   ├── Cargo.toml
 │   └── src/
 │       ├── lib.rs
-│       ├── fasta.rs               # FASTA parser (zero-copy)
-│       ├── fastq.rs               # FASTQ parser (streaming)
-│       ├── sequence.rs            # DNA, RNA, Protein types
-│       ├── kmer.rs                # K-mer counting, minimizers
-│       ├── index.rs               # FM-index, suffix arrays
-│       └── quality.rs             # Phred scores, trimming
-├── cyanea-align/
+│       ├── fasta.rs                   # FASTA/FASTQ parser (via needletail)
+│       └── sequence.rs               # Sequence types (stub)
+├── cyanea-io/
 │   ├── Cargo.toml
 │   └── src/
-│       ├── lib.rs
-│       ├── smith_waterman.rs      # Local alignment
-│       ├── needleman_wunsch.rs    # Global alignment
-│       ├── scoring.rs             # BLOSUM, PAM, custom
-│       ├── simd.rs                # SIMD-accelerated alignment
-│       └── gpu.rs                 # GPU batch alignment
-├── cyanea-gpu/
-│   ├── Cargo.toml
-│   └── src/
-│       ├── lib.rs
-│       ├── context.rs             # GpuContext abstraction
-│       ├── cuda.rs                # CUDA backend
-│       ├── metal.rs               # Metal backend
-│       └── kernels/               # Compute kernels
-└── cyanea-wasm/
-    ├── Cargo.toml
-    └── src/
-        ├── lib.rs
-        ├── bindings.rs            # wasm-bindgen exports
-        └── runtime.rs             # Browser runtime utilities
+│       └── lib.rs                     # CSV parsing (csv crate)
+├── cyanea-align/                      # Stub — planned: SW, NW, MSA
+├── cyanea-omics/                      # Stub — planned: expression matrices, VCF
+├── cyanea-stats/                      # Stub — planned: descriptive stats, testing
+├── cyanea-ml/                         # Stub — planned: embeddings, clustering
+├── cyanea-chem/                       # Stub — planned: SMILES, molecular properties
+├── cyanea-struct/                     # Stub — planned: PDB/mmCIF, RMSD
+├── cyanea-phylo/                      # Stub — planned: Newick, tree distances
+├── cyanea-gpu/                        # Stub — planned: CUDA/Metal abstraction
+├── cyanea-wasm/                       # Stub — planned: wasm-bindgen browser bindings
+└── cyanea-py/                         # Stub — planned: PyO3 Python bindings
 ```
+
+Stub crates have `Cargo.toml` + `src/lib.rs` (doc comments only, no code yet). They compile and are part of the workspace but export nothing.
 
 ### Platform Structure (Elixir/Phoenix)
 
 The platform is **pure Elixir/Phoenix**. Rust is only in `native/` as thin NIF wrappers.
 
 ```
-platform/
+cyanea/                                # github.com/cyanea-io/cyanea
 ├── lib/
-│   ├── cyanea/                    # Business logic (Elixir contexts)
-│   │   ├── accounts/              # Users, authentication, ORCID
-│   │   ├── organizations/         # Orgs, teams, memberships
-│   │   ├── projects/              # Projects (artifact collections)
-│   │   ├── artifacts/             # Typed artifacts (datasets, protocols, etc.)
-│   │   ├── lineage/               # Provenance graph, derivations
-│   │   ├── federation/            # Sync engine, manifests, node registry
-│   │   ├── files/                 # Blob storage, content addressing
-│   │   ├── search/                # Meilisearch integration
-│   │   ├── application.ex         # OTP application
-│   │   ├── repo.ex                # Ecto repo
-│   │   └── native.ex              # Elixir API for NIFs
-│   └── cyanea_web/                # Web layer (Phoenix)
-│       ├── live/                  # LiveView pages
-│       ├── components/            # UI components
-│       ├── controllers/           # API controllers
+│   ├── cyanea/                        # Business logic (Elixir contexts)
+│   │   ├── accounts.ex                # Users, authentication
+│   │   ├── accounts/                  # User schema, tokens
+│   │   ├── organizations.ex           # Orgs context
+│   │   ├── organizations/             # Organization, Membership schemas
+│   │   ├── repositories.ex            # Repositories context
+│   │   ├── repositories/              # Repository schema
+│   │   ├── files/                     # Blob storage, content addressing
+│   │   ├── search/                    # Meilisearch integration
+│   │   ├── native.ex                  # Elixir NIF function stubs (Rustler)
+│   │   ├── guardian.ex                # JWT auth
+│   │   ├── application.ex             # OTP application
+│   │   └── repo.ex                    # Ecto repo
+│   └── cyanea_web/                    # Web layer (Phoenix)
+│       ├── live/                      # LiveView pages
+│       │   ├── home_live.ex
+│       │   ├── dashboard_live.ex
+│       │   ├── explore_live.ex
+│       │   ├── settings_live.ex
+│       │   ├── auth_live/             # Login, Register
+│       │   ├── repository_live/       # New, Show
+│       │   └── user_live/             # Show
+│       ├── components/                # UI components (core_components, layouts)
+│       ├── controllers/               # Session controller, error handlers
+│       ├── router.ex
 │       ├── endpoint.ex
-│       └── router.ex
+│       ├── user_auth.ex               # Auth plugs and helpers
+│       ├── telemetry.ex
+│       └── gettext.ex
 ├── native/
-│   └── cyanea_nif/                # THIN Rust NIF wrappers (not business logic)
-│       ├── Cargo.toml             # Depends on labs/ crates
+│   └── cyanea_native/                 # Rust NIF crate (cdylib via Rustler)
+│       ├── Cargo.toml                 # Depends on labs/ crates via path
+│       ├── Cargo.lock
 │       └── src/
-│           └── lib.rs             # Rustler exports → calls cyanea-seq, etc.
+│           └── lib.rs                 # #[rustler::nif] exports
 ├── priv/
-│   ├── repo/migrations/           # Database migrations
-│   └── static/
-│       └── wasm/                  # Pre-built WASM from labs/cyanea-wasm
-├── assets/                        # Frontend (Tailwind, JS, WASM loader)
-├── config/                        # Configuration
-└── test/                          # Tests (ExUnit)
+│   ├── repo/migrations/               # Ecto database migrations
+│   └── static/                        # Static assets
+├── assets/                            # Frontend (Tailwind, JS)
+├── config/                            # Phoenix configuration
+└── test/                              # ExUnit tests
 ```
 
 **Key principle:** All business logic lives in Elixir. NIFs are pure compute (parsing, hashing, alignment). No Rust in the hot path for web requests except when explicitly calling compute functions.
@@ -1048,11 +1057,17 @@ These are areas where Claude Code should propose options, not assume:
 
 ---
 
-## Related Files
+## Related Repositories
+
+| Repo | URL | Description |
+|------|-----|-------------|
+| **labs** | `github.com/cyanea-io/labs` | Rust bioinformatics ecosystem (Cargo workspace, 13 crates) |
+| **cyanea** | `github.com/cyanea-io/cyanea` | Elixir/Phoenix platform (this repo) |
+| **www** | `github.com/cyanea-io/www` | Marketing website (Zola) |
+
+### Key Files in This Repo
 
 - [ROADMAP.md](ROADMAP.md) — Development roadmap (Labs + Platform phases)
 - [README.md](../README.md) — Project overview
 - [docker-compose.yml](../docker-compose.yml) — Local development services
-- `labs/` — Rust bioinformatics ecosystem (Cargo workspace)
-- `platform/` — Elixir/Phoenix application
-- `www/` — Marketing website (Zola)
+- `native/cyanea_native/` — Rust NIF crate (thin bridge to labs/)

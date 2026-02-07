@@ -54,6 +54,9 @@ defmodule CyaneaWeb.Router do
       live "/organizations/new", OrganizationLive.New, :new
       live "/organizations/:slug/settings", OrganizationLive.Settings, :edit
       live "/organizations/:slug/members", OrganizationLive.Members, :index
+
+      # Artifact creation (requires auth)
+      live "/:username/:slug/artifacts/new", ArtifactLive.New, :new
     end
   end
 
@@ -74,6 +77,7 @@ defmodule CyaneaWeb.Router do
       live "/explore", ExploreLive, :index
       live "/:username", UserLive.Show, :show
       live "/:username/:slug", RepositoryLive.Show, :show
+      live "/:username/:slug/artifacts/:artifact_slug", ArtifactLive.Show, :show
     end
   end
 

@@ -2,6 +2,7 @@ defmodule CyaneaWeb.RepositoryLive.Show do
   use CyaneaWeb, :live_view
 
   alias Cyanea.Repositories
+  alias Cyanea.Artifacts
   alias Cyanea.Files
 
   @impl true
@@ -30,6 +31,7 @@ defmodule CyaneaWeb.RepositoryLive.Show do
         owner_display = repo_owner_display(repo)
         is_owner = current_user && is_repo_owner?(repo, current_user)
         files = Files.list_repository_files(repo.id)
+        artifacts = Artifacts.list_repository_artifacts(repo.id)
 
         socket =
           socket
@@ -38,7 +40,8 @@ defmodule CyaneaWeb.RepositoryLive.Show do
             repo: repo,
             owner_display: owner_display,
             is_owner: is_owner,
-            files: files
+            files: files,
+            artifacts: artifacts
           )
 
         socket =
@@ -171,6 +174,65 @@ defmodule CyaneaWeb.RepositoryLive.Show do
         </div>
       </div>
 
+      <%!-- Artifacts --%>
+      <.card padding="p-0" class="mt-6">
+        <:header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Artifacts</h2>
+            <div class="flex items-center gap-3">
+              <span :if={@artifacts != []} class="text-xs text-slate-500">
+                <%= length(@artifacts) %> artifact(s)
+              </span>
+              <.link
+                :if={@is_owner}
+                navigate={~p"/#{@owner_display}/#{@repo.slug}/artifacts/new"}
+                class="text-xs font-medium text-primary hover:text-primary-700"
+              >
+                + New artifact
+              </.link>
+            </div>
+          </div>
+        </:header>
+
+        <div :if={@artifacts != []} class="divide-y divide-slate-100 dark:divide-slate-700">
+          <.link
+            :for={artifact <- @artifacts}
+            navigate={~p"/#{@owner_display}/#{@repo.slug}/artifacts/#{artifact.slug}"}
+            class="flex items-center justify-between px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+          >
+            <div class="flex items-center gap-3">
+              <.icon name={artifact_type_icon(artifact.type)} class="h-5 w-5 text-slate-400 shrink-0" />
+              <div>
+                <span class="text-sm font-medium text-slate-900 dark:text-white"><%= artifact.name %></span>
+                <span class="ml-2 text-xs text-slate-500">v<%= artifact.version %></span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <.badge color={:primary} size={:xs}><%= artifact.type %></.badge>
+              <.visibility_badge visibility={artifact.visibility} />
+            </div>
+          </.link>
+        </div>
+
+        <div :if={@artifacts == []} class="px-6 py-12">
+          <.empty_state
+            icon="hero-beaker"
+            heading="No artifacts yet."
+            description="Create datasets, protocols, and other research artifacts."
+          >
+            <:action>
+              <.link
+                :if={@is_owner}
+                navigate={~p"/#{@owner_display}/#{@repo.slug}/artifacts/new"}
+                class="text-sm font-medium text-primary hover:text-primary-700"
+              >
+                Create your first artifact
+              </.link>
+            </:action>
+          </.empty_state>
+        </div>
+      </.card>
+
       <%!-- File listing --%>
       <.card padding="p-0" class="mt-6">
         <:header>
@@ -257,6 +319,14 @@ defmodule CyaneaWeb.RepositoryLive.Show do
 
   defp file_icon("directory"), do: "hero-folder"
   defp file_icon(_), do: "hero-document"
+
+  defp artifact_type_icon("dataset"), do: "hero-circle-stack"
+  defp artifact_type_icon("protocol"), do: "hero-clipboard-document-list"
+  defp artifact_type_icon("notebook"), do: "hero-book-open"
+  defp artifact_type_icon("pipeline"), do: "hero-arrow-path"
+  defp artifact_type_icon("result"), do: "hero-chart-bar"
+  defp artifact_type_icon("sample"), do: "hero-beaker"
+  defp artifact_type_icon(_), do: "hero-document"
 
   defp upload_error_to_string(:too_large), do: "File is too large (max 100 MB)."
   defp upload_error_to_string(:too_many_files), do: "Too many files (max 5)."

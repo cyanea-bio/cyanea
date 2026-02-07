@@ -189,19 +189,24 @@ defmodule Cyanea.Federation do
         artifact
       end
 
+    content_hash =
+      artifact.content_hash ||
+        :crypto.hash(:sha256, :erlang.term_to_binary(artifact.id))
+        |> Base.encode16(case: :lower)
+
     %Manifest{}
     |> Manifest.changeset(%{
       global_id: artifact.global_id,
-      content_hash: artifact.content_hash || "",
+      content_hash: content_hash,
       signature: signature,
       signer_key_id: signer_key_id,
       artifact_id: artifact.id,
       node_id: node_id,
       payload: %{
-        type: artifact.type,
-        version: artifact.version,
-        name: artifact.name,
-        visibility: artifact.visibility
+        "type" => artifact.type,
+        "version" => artifact.version,
+        "name" => artifact.name,
+        "visibility" => artifact.visibility
       }
     })
     |> Repo.insert()

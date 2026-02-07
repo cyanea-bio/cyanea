@@ -27,7 +27,7 @@
       >
         <.icon name="hero-magnifying-glass" class="h-4 w-4" />
         <span class="flex-1 text-left">Search...</span>
-        <kbd class="rounded bg-slate-200 px-1.5 py-0.5 text-xs font-medium dark:bg-slate-700">⌘K</kbd>
+        <.kbd>⌘K</.kbd>
       </button>
 
       <%= if @current_user do %>
@@ -36,49 +36,25 @@
         </a>
 
         <%!-- User dropdown --%>
-        <div class="relative" phx-click-away={JS.hide(to: "#user-dropdown")}>
-          <button
-            type="button"
-            phx-click={JS.toggle(to: "#user-dropdown")}
-            class="flex items-center gap-2 rounded-full"
-          >
-            <img
-              src={@current_user.avatar_url || "https://api.dicebear.com/7.x/initials/svg?seed=#{@current_user.username}"}
-              alt={@current_user.username}
-              class="h-8 w-8 rounded-full"
-            />
-          </button>
-
-          <div
-            id="user-dropdown"
-            class="absolute right-0 mt-2 hidden w-56 rounded-xl border border-slate-200 bg-white py-2 shadow-lg dark:border-slate-700 dark:bg-slate-800"
-          >
-            <div class="border-b border-slate-200 px-4 py-2 dark:border-slate-700">
+        <.dropdown_menu id="user-dropdown">
+          <:trigger>
+            <.avatar name={@current_user.username} src={@current_user.avatar_url} size={:sm} />
+          </:trigger>
+          <:item>
+            <div class="px-0 py-0">
               <p class="text-sm font-medium text-slate-900 dark:text-white">
                 <%= @current_user.name || @current_user.username %>
               </p>
               <p class="text-xs text-slate-500">@<%= @current_user.username %></p>
             </div>
-            <a href={~p"/#{@current_user.username}"} class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">
-              <.icon name="hero-user" class="h-4 w-4" /> Your profile
-            </a>
-            <a href={~p"/dashboard"} class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">
-              <.icon name="hero-squares-2x2" class="h-4 w-4" /> Dashboard
-            </a>
-            <a href={~p"/settings"} class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700">
-              <.icon name="hero-cog-6-tooth" class="h-4 w-4" /> Settings
-            </a>
-            <div class="border-t border-slate-200 dark:border-slate-700">
-              <.link
-                href={~p"/auth/logout"}
-                method="delete"
-                class="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
-              >
-                <.icon name="hero-arrow-right-on-rectangle" class="h-4 w-4" /> Sign out
-              </.link>
-            </div>
-          </div>
-        </div>
+          </:item>
+          <:item separator={true} />
+          <:item navigate={~p"/#{@current_user.username}"} icon="hero-user">Your profile</:item>
+          <:item navigate={~p"/dashboard"} icon="hero-squares-2x2">Dashboard</:item>
+          <:item navigate={~p"/settings"} icon="hero-cog-6-tooth">Settings</:item>
+          <:item separator={true} />
+          <:item href={~p"/auth/logout"} method="delete" icon="hero-arrow-right-on-rectangle">Sign out</:item>
+        </.dropdown_menu>
       <% else %>
         <a href={~p"/auth/login"} class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
           Sign in

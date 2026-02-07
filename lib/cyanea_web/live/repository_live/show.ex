@@ -118,25 +118,16 @@ defmodule CyaneaWeb.RepositoryLive.Show do
     ~H"""
     <div>
       <%!-- Breadcrumb --%>
-      <div class="flex items-center gap-2 text-sm text-slate-500">
-        <.link navigate={owner_path(@repo)} class="hover:text-primary">
-          <%= @owner_display %>
-        </.link>
-        <span>/</span>
-        <span class="font-semibold text-slate-900 dark:text-white"><%= @repo.name %></span>
-        <span class={[
-          "ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-          if(@repo.visibility == "public",
-            do: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-            else: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-          )
-        ]}>
-          <%= @repo.visibility %>
-        </span>
+      <div class="flex items-center gap-3">
+        <.breadcrumb>
+          <:crumb navigate={owner_path(@repo)}><%= @owner_display %></:crumb>
+          <:crumb><%= @repo.name %></:crumb>
+        </.breadcrumb>
+        <.visibility_badge visibility={@repo.visibility} />
       </div>
 
       <%!-- Repository Info Card --%>
-      <div class="mt-6 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+      <.card class="mt-6">
         <div class="flex items-start justify-between">
           <div>
             <h1 class="text-2xl font-bold text-slate-900 dark:text-white"><%= @repo.name %></h1>
@@ -153,85 +144,41 @@ defmodule CyaneaWeb.RepositoryLive.Show do
         </div>
 
         <%!-- Metadata --%>
-        <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-500">
-          <span :if={@repo.license} class="flex items-center gap-1">
-            <.icon name="hero-scale" class="h-4 w-4" />
-            <%= license_display(@repo.license) %>
-          </span>
-          <span class="flex items-center gap-1">
-            <.icon name="hero-clock" class="h-4 w-4" />
-            Updated <%= format_date(@repo.updated_at) %>
-          </span>
-          <span :if={@repo.default_branch} class="flex items-center gap-1">
-            <.icon name="hero-code-bracket" class="h-4 w-4" />
+        <div class="mt-4 flex flex-wrap items-center gap-4">
+          <.metadata_row :if={@repo.license} icon="hero-scale">
+            <%= CyaneaWeb.Formatters.license_display(@repo.license) %>
+          </.metadata_row>
+          <.metadata_row icon="hero-clock">
+            Updated <%= CyaneaWeb.Formatters.format_date(@repo.updated_at) %>
+          </.metadata_row>
+          <.metadata_row :if={@repo.default_branch} icon="hero-code-bracket">
             <%= @repo.default_branch %>
-          </span>
+          </.metadata_row>
         </div>
 
         <%!-- Tags --%>
         <div :if={@repo.tags != []} class="mt-4 flex flex-wrap gap-2">
-          <span
-            :for={tag <- @repo.tags}
-            class="rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400"
-          >
-            <%= tag %>
-          </span>
+          <.badge :for={tag <- @repo.tags} color={:primary}><%= tag %></.badge>
+        </div>
+      </.card>
+
+      <%!-- Upload zone (owner only) --%>
+      <div :if={@is_owner} class="mt-6">
+        <.upload_zone upload={@uploads.files} />
+        <%!-- Upload errors --%>
+        <div :for={err <- upload_errors(@uploads.files)} class="mt-2 text-sm text-red-600">
+          <%= upload_error_to_string(err) %>
         </div>
       </div>
 
-      <%!-- Upload zone (owner only) --%>
-      <div :if={@is_owner} class="mt-6 rounded-xl border-2 border-dashed border-slate-300 bg-white p-6 dark:border-slate-600 dark:bg-slate-800">
-        <form id="upload-form" phx-change="validate-upload" phx-submit="upload" phx-drop-target={@uploads.files.ref}>
-          <div class="text-center">
-            <.icon name="hero-cloud-arrow-up" class="mx-auto h-10 w-10 text-slate-400" />
-            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Drag and drop files here, or
-              <label class="cursor-pointer font-medium text-primary hover:text-primary-500">
-                browse
-                <.live_file_input upload={@uploads.files} class="sr-only" />
-              </label>
-            </p>
-            <p class="mt-1 text-xs text-slate-400">Up to 5 files, 100 MB each</p>
-          </div>
-
-          <%!-- Upload entries --%>
-          <div :if={@uploads.files.entries != []} class="mt-4 space-y-2">
-            <div :for={entry <- @uploads.files.entries} class="flex items-center justify-between rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-              <div class="flex items-center gap-3 min-w-0 flex-1">
-                <.icon name="hero-document" class="h-5 w-5 text-slate-400 shrink-0" />
-                <span class="truncate text-sm"><%= entry.client_name %></span>
-                <span class="text-xs text-slate-400"><%= format_size(entry.client_size) %></span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="h-1.5 w-20 rounded-full bg-slate-200 dark:bg-slate-700">
-                  <div class="h-1.5 rounded-full bg-primary" style={"width: #{entry.progress}%"}></div>
-                </div>
-                <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref} class="text-slate-400 hover:text-red-500">
-                  <.icon name="hero-x-mark" class="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div :if={@uploads.files.entries != []} class="mt-4 text-center">
-            <.button type="submit" phx-disable-with="Uploading...">Upload files</.button>
-          </div>
-
-          <%!-- Upload errors --%>
-          <div :for={err <- upload_errors(@uploads.files)} class="mt-2 text-sm text-red-600">
-            <%= upload_error_to_string(err) %>
-          </div>
-        </form>
-      </div>
-
       <%!-- File listing --%>
-      <div class="mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-        <div class="border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+      <.card padding="p-0" class="mt-6">
+        <:header>
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Files</h2>
             <span :if={@files != []} class="text-xs text-slate-500"><%= length(@files) %> file(s)</span>
           </div>
-        </div>
+        </:header>
 
         <div :if={@files != []}>
           <table class="w-full">
@@ -247,7 +194,7 @@ defmodule CyaneaWeb.RepositoryLive.Show do
                   </div>
                 </td>
                 <td class="px-6 py-3 text-right text-xs text-slate-500">
-                  <%= if file.size, do: format_size(file.size), else: "-" %>
+                  <%= if file.size, do: CyaneaWeb.Formatters.format_size(file.size), else: "-" %>
                 </td>
                 <td class="px-6 py-3 text-right text-xs text-slate-500">
                   <%= file.mime_type || "-" %>
@@ -276,12 +223,14 @@ defmodule CyaneaWeb.RepositoryLive.Show do
           </table>
         </div>
 
-        <div :if={@files == []} class="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-          <.icon name="hero-folder-open" class="mx-auto mb-3 h-12 w-12 text-slate-300 dark:text-slate-600" />
-          <p>No files uploaded yet.</p>
-          <p class="mt-1">Upload datasets, protocols, and research artifacts to get started.</p>
+        <div :if={@files == []} class="px-6 py-12">
+          <.empty_state
+            icon="hero-folder-open"
+            heading="No files uploaded yet."
+            description="Upload datasets, protocols, and research artifacts to get started."
+          />
         </div>
-      </div>
+      </.card>
     </div>
     """
   end
@@ -309,25 +258,8 @@ defmodule CyaneaWeb.RepositoryLive.Show do
   defp file_icon("directory"), do: "hero-folder"
   defp file_icon(_), do: "hero-document"
 
-  defp format_size(bytes) when bytes < 1024, do: "#{bytes} B"
-  defp format_size(bytes) when bytes < 1_048_576, do: "#{Float.round(bytes / 1024, 1)} KB"
-  defp format_size(bytes) when bytes < 1_073_741_824, do: "#{Float.round(bytes / 1_048_576, 1)} MB"
-  defp format_size(bytes), do: "#{Float.round(bytes / 1_073_741_824, 1)} GB"
-
   defp upload_error_to_string(:too_large), do: "File is too large (max 100 MB)."
   defp upload_error_to_string(:too_many_files), do: "Too many files (max 5)."
   defp upload_error_to_string(:external_client_failure), do: "Upload failed."
   defp upload_error_to_string(err), do: "Upload error: #{inspect(err)}"
-
-  defp license_display("cc-by-4.0"), do: "CC BY 4.0"
-  defp license_display("cc-by-sa-4.0"), do: "CC BY-SA 4.0"
-  defp license_display("cc0-1.0"), do: "CC0 1.0"
-  defp license_display("mit"), do: "MIT"
-  defp license_display("apache-2.0"), do: "Apache 2.0"
-  defp license_display("proprietary"), do: "Proprietary"
-  defp license_display(other), do: other
-
-  defp format_date(datetime) do
-    Calendar.strftime(datetime, "%b %d, %Y")
-  end
 end

@@ -87,49 +87,19 @@ defmodule CyaneaWeb.ExploreLive do
       </.header>
 
       <div class="mt-6">
-        <form phx-change="search" phx-submit="search">
-          <div class="relative">
-            <.icon name="hero-magnifying-glass" class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              name="query"
-              value={@search_query}
-              placeholder="Search repositories and users..."
-              phx-debounce="300"
-              class="block w-full rounded-lg border-slate-300 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:border-slate-600 dark:bg-slate-800"
-            />
-          </div>
-        </form>
+        <.search_input value={@search_query} placeholder="Search repositories and users..." />
       </div>
 
       <%!-- Tabs --%>
-      <div :if={@search_query != ""} class="mt-6 flex gap-4 border-b border-slate-200 dark:border-slate-700">
-        <button
-          phx-click="switch-tab"
-          phx-value-tab="repositories"
-          class={[
-            "border-b-2 px-1 pb-3 text-sm font-medium",
-            if(@active_tab == :repositories,
-              do: "border-primary-500 text-primary",
-              else: "border-transparent text-slate-500 hover:text-slate-700"
-            )
-          ]}
-        >
-          Repositories (<%= length(@repositories) %>)
-        </button>
-        <button
-          phx-click="switch-tab"
-          phx-value-tab="users"
-          class={[
-            "border-b-2 px-1 pb-3 text-sm font-medium",
-            if(@active_tab == :users,
-              do: "border-primary-500 text-primary",
-              else: "border-transparent text-slate-500 hover:text-slate-700"
-            )
-          ]}
-        >
-          Users (<%= length(@user_results) %>)
-        </button>
+      <div :if={@search_query != ""} class="mt-6">
+        <.tabs>
+          <:tab active={@active_tab == :repositories} click="switch-tab" value="repositories" count={length(@repositories)}>
+            Repositories
+          </:tab>
+          <:tab active={@active_tab == :users} click="switch-tab" value="users" count={length(@user_results)}>
+            Users
+          </:tab>
+        </.tabs>
       </div>
 
       <%!-- Repository results --%>
@@ -147,42 +117,28 @@ defmodule CyaneaWeb.ExploreLive do
                 >
                   <span class="text-slate-500"><%= repo_owner_name(repo) %>/</span><%= repo.name %>
                 </.link>
-                <span class={[
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                  if(repo.visibility == "public",
-                    do: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-                    else: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                  )
-                ]}>
-                  <%= repo.visibility %>
-                </span>
+                <.visibility_badge visibility={repo.visibility} />
               </div>
               <p :if={repo.description} class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                 <%= repo.description %>
               </p>
               <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                <span :if={repo.license} class="flex items-center gap-1">
-                  <.icon name="hero-scale" class="h-3.5 w-3.5" />
+                <.metadata_row :if={repo.license} icon="hero-scale">
                   <%= repo.license %>
-                </span>
-                <span :for={tag <- repo.tags || []} class="rounded-full bg-slate-100 px-2 py-0.5 dark:bg-slate-700">
-                  <%= tag %>
-                </span>
-                <span class="flex items-center gap-1">
-                  <.icon name="hero-star" class="h-3.5 w-3.5" />
+                </.metadata_row>
+                <.badge :for={tag <- repo.tags || []} color={:gray} size={:xs}><%= tag %></.badge>
+                <.metadata_row icon="hero-star">
                   <%= repo.stars_count %>
-                </span>
+                </.metadata_row>
               </div>
             </div>
           </div>
         </div>
 
-        <p
+        <.empty_state
           :if={@repositories == []}
-          class="py-12 text-center text-slate-500 dark:text-slate-400"
-        >
-          No repositories found.
-        </p>
+          heading="No repositories found."
+        />
       </div>
 
       <%!-- User results --%>
@@ -191,11 +147,7 @@ defmodule CyaneaWeb.ExploreLive do
           :for={user <- @user_results}
           class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
         >
-          <img
-            src={"https://api.dicebear.com/7.x/initials/svg?seed=#{user["username"]}"}
-            alt={user["username"]}
-            class="h-10 w-10 rounded-full"
-          />
+          <.avatar name={user["username"] || ""} size={:md} />
           <div>
             <.link navigate={~p"/#{user["username"]}"} class="font-semibold text-primary hover:underline">
               <%= user["name"] || user["username"] %>
@@ -205,9 +157,7 @@ defmodule CyaneaWeb.ExploreLive do
           </div>
         </div>
 
-        <p :if={@user_results == []} class="py-12 text-center text-slate-500 dark:text-slate-400">
-          No users found.
-        </p>
+        <.empty_state :if={@user_results == []} heading="No users found." />
       </div>
     </div>
     """

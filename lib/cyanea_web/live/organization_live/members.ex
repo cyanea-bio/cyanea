@@ -101,7 +101,7 @@ defmodule CyaneaWeb.OrganizationLive.Members do
       </.header>
 
       <%!-- Add member --%>
-      <div class="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <.card class="mt-8">
         <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Add member</h3>
         <form phx-change="search-user" phx-submit="search-user" class="mt-4">
           <div class="flex gap-3">
@@ -118,11 +118,7 @@ defmodule CyaneaWeb.OrganizationLive.Members do
 
         <div :if={@search_result} class="mt-4 flex items-center justify-between rounded-lg border border-slate-200 p-4 dark:border-slate-700">
           <div class="flex items-center gap-3">
-            <img
-              src={@search_result.avatar_url || "https://api.dicebear.com/7.x/initials/svg?seed=#{@search_result.username}"}
-              alt={@search_result.username}
-              class="h-8 w-8 rounded-full"
-            />
+            <.avatar name={@search_result.username} src={@search_result.avatar_url} size={:sm} />
             <div>
               <p class="text-sm font-medium text-slate-900 dark:text-white"><%= @search_result.name || @search_result.username %></p>
               <p class="text-xs text-slate-500">@<%= @search_result.username %></p>
@@ -151,23 +147,19 @@ defmodule CyaneaWeb.OrganizationLive.Members do
         <p :if={@search_username != "" && is_nil(@search_result)} class="mt-4 text-sm text-slate-500">
           No user found with username "<%= @search_username %>".
         </p>
-      </div>
+      </.card>
 
       <%!-- Members list --%>
-      <div class="mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-        <div class="border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+      <.card padding="p-0" class="mt-6">
+        <:header>
           <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
             <%= length(@members) %> member(s)
           </h3>
-        </div>
+        </:header>
 
         <div :for={membership <- @members} class="flex items-center justify-between border-b border-slate-100 px-6 py-4 last:border-0 dark:border-slate-700">
           <div class="flex items-center gap-3">
-            <img
-              src={membership.user.avatar_url || "https://api.dicebear.com/7.x/initials/svg?seed=#{membership.user.username}"}
-              alt={membership.user.username}
-              class="h-8 w-8 rounded-full"
-            />
+            <.avatar name={membership.user.username} src={membership.user.avatar_url} size={:sm} />
             <div>
               <.link navigate={~p"/#{membership.user.username}"} class="text-sm font-medium text-slate-900 hover:text-primary dark:text-white">
                 <%= membership.user.name || membership.user.username %>
@@ -199,7 +191,7 @@ defmodule CyaneaWeb.OrganizationLive.Members do
             </button>
           </div>
         </div>
-      </div>
+      </.card>
 
       <div class="mt-4 text-right">
         <.link navigate={~p"/#{@org.slug}"} class="text-sm text-slate-500 hover:text-slate-700">

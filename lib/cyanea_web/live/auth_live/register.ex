@@ -38,7 +38,7 @@ defmodule CyaneaWeb.AuthLive.Register do
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Create your account</h1>
         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
           Already have an account?
-          <.link navigate={~p"/auth/login"} class="font-medium text-cyan-600 hover:text-cyan-500">
+          <.link navigate={~p"/auth/login"} class="font-medium text-primary hover:text-primary-500">
             Sign in
           </.link>
         </p>

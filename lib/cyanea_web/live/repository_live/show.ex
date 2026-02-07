@@ -119,7 +119,7 @@ defmodule CyaneaWeb.RepositoryLive.Show do
     <div>
       <%!-- Breadcrumb --%>
       <div class="flex items-center gap-2 text-sm text-slate-500">
-        <.link navigate={owner_path(@repo)} class="hover:text-cyan-600">
+        <.link navigate={owner_path(@repo)} class="hover:text-primary">
           <%= @owner_display %>
         </.link>
         <span>/</span>
@@ -172,7 +172,7 @@ defmodule CyaneaWeb.RepositoryLive.Show do
         <div :if={@repo.tags != []} class="mt-4 flex flex-wrap gap-2">
           <span
             :for={tag <- @repo.tags}
-            class="rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400"
+            class="rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400"
           >
             <%= tag %>
           </span>
@@ -186,7 +186,7 @@ defmodule CyaneaWeb.RepositoryLive.Show do
             <.icon name="hero-cloud-arrow-up" class="mx-auto h-10 w-10 text-slate-400" />
             <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
               Drag and drop files here, or
-              <label class="cursor-pointer font-medium text-cyan-600 hover:text-cyan-500">
+              <label class="cursor-pointer font-medium text-primary hover:text-primary-500">
                 browse
                 <.live_file_input upload={@uploads.files} class="sr-only" />
               </label>
@@ -204,7 +204,7 @@ defmodule CyaneaWeb.RepositoryLive.Show do
               </div>
               <div class="flex items-center gap-2">
                 <div class="h-1.5 w-20 rounded-full bg-slate-200 dark:bg-slate-700">
-                  <div class="h-1.5 rounded-full bg-cyan-600" style={"width: #{entry.progress}%"}></div>
+                  <div class="h-1.5 rounded-full bg-primary" style={"width: #{entry.progress}%"}></div>
                 </div>
                 <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref} class="text-slate-400 hover:text-red-500">
                   <.icon name="hero-x-mark" class="h-4 w-4" />
@@ -256,7 +256,7 @@ defmodule CyaneaWeb.RepositoryLive.Show do
                   <div class="flex items-center justify-end gap-2">
                     <.link
                       href={~p"/files/#{file.id}/download"}
-                      class="text-xs text-cyan-600 hover:text-cyan-700"
+                      class="text-xs text-primary hover:text-primary-700"
                     >
                       Download
                     </.link>

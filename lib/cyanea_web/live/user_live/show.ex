@@ -92,7 +92,7 @@ defmodule CyaneaWeb.UserLive.Show do
               <div>
                 <.link
                   navigate={repo_path(repo)}
-                  class="font-semibold text-cyan-600 hover:underline"
+                  class="font-semibold text-primary hover:underline"
                 >
                   <%= repo.name %>
                 </.link>
@@ -187,10 +187,10 @@ defmodule CyaneaWeb.UserLive.Show do
       </h1>
       <p class="text-sm text-slate-500">@<%= @org.slug %></p>
       <div :if={@org_admin} class="mt-2 flex gap-2">
-        <.link navigate={~p"/organizations/#{@org.slug}/settings"} class="text-xs text-slate-500 hover:text-cyan-600">
+        <.link navigate={~p"/organizations/#{@org.slug}/settings"} class="text-xs text-slate-500 hover:text-primary">
           <.icon name="hero-cog-6-tooth" class="h-4 w-4" /> Settings
         </.link>
-        <.link navigate={~p"/organizations/#{@org.slug}/members"} class="text-xs text-slate-500 hover:text-cyan-600">
+        <.link navigate={~p"/organizations/#{@org.slug}/members"} class="text-xs text-slate-500 hover:text-primary">
           <.icon name="hero-user-group" class="h-4 w-4" /> Members
         </.link>
       </div>

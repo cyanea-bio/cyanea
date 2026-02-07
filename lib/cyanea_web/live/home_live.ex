@@ -18,7 +18,7 @@ defmodule CyaneaWeb.HomeLive do
     ~H"""
     <div class="flex min-h-[60vh] flex-col items-center justify-center text-center">
       <div class="mb-8">
-        <svg class="mx-auto h-24 w-24 text-cyan-600" viewBox="0 0 32 32" fill="currentColor">
+        <svg class="mx-auto h-24 w-24 text-primary" viewBox="0 0 32 32" fill="currentColor">
           <circle cx="16" cy="12" r="8" opacity="0.9"/>
           <line x1="10" y1="20" x2="8" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           <line x1="16" y1="20" x2="16" y2="30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
@@ -38,7 +38,7 @@ defmodule CyaneaWeb.HomeLive do
       <div class="mt-10 flex items-center justify-center gap-4">
         <.link
           navigate={~p"/auth/register"}
-          class="rounded-lg bg-cyan-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-cyan-700"
+          class="rounded-lg bg-primary px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-700"
         >
           Get started
         </.link>
@@ -52,7 +52,7 @@ defmodule CyaneaWeb.HomeLive do
 
       <div class="mt-16 grid gap-8 sm:grid-cols-3">
         <div class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
-          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-primary dark:bg-primary-900/50">
             <.icon name="hero-document-text" class="h-6 w-6" />
           </div>
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Protocols</h3>
@@ -62,7 +62,7 @@ defmodule CyaneaWeb.HomeLive do
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
-          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-primary dark:bg-primary-900/50">
             <.icon name="hero-circle-stack" class="h-6 w-6" />
           </div>
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Datasets</h3>
@@ -72,7 +72,7 @@ defmodule CyaneaWeb.HomeLive do
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
-          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 dark:bg-cyan-900/50">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-primary dark:bg-primary-900/50">
             <.icon name="hero-users" class="h-6 w-6" />
           </div>
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Collaborate</h3>

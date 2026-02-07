@@ -96,7 +96,7 @@ defmodule CyaneaWeb.ExploreLive do
               value={@search_query}
               placeholder="Search repositories and users..."
               phx-debounce="300"
-              class="block w-full rounded-lg border-slate-300 pl-10 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm dark:border-slate-600 dark:bg-slate-800"
+              class="block w-full rounded-lg border-slate-300 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:border-slate-600 dark:bg-slate-800"
             />
           </div>
         </form>
@@ -110,7 +110,7 @@ defmodule CyaneaWeb.ExploreLive do
           class={[
             "border-b-2 px-1 pb-3 text-sm font-medium",
             if(@active_tab == :repositories,
-              do: "border-cyan-500 text-cyan-600",
+              do: "border-primary-500 text-primary",
               else: "border-transparent text-slate-500 hover:text-slate-700"
             )
           ]}
@@ -123,7 +123,7 @@ defmodule CyaneaWeb.ExploreLive do
           class={[
             "border-b-2 px-1 pb-3 text-sm font-medium",
             if(@active_tab == :users,
-              do: "border-cyan-500 text-cyan-600",
+              do: "border-primary-500 text-primary",
               else: "border-transparent text-slate-500 hover:text-slate-700"
             )
           ]}
@@ -143,7 +143,7 @@ defmodule CyaneaWeb.ExploreLive do
               <div class="flex items-center gap-2">
                 <.link
                   navigate={repo_path(repo)}
-                  class="text-lg font-semibold text-cyan-600 hover:underline"
+                  class="text-lg font-semibold text-primary hover:underline"
                 >
                   <span class="text-slate-500"><%= repo_owner_name(repo) %>/</span><%= repo.name %>
                 </.link>
@@ -197,7 +197,7 @@ defmodule CyaneaWeb.ExploreLive do
             class="h-10 w-10 rounded-full"
           />
           <div>
-            <.link navigate={~p"/#{user["username"]}"} class="font-semibold text-cyan-600 hover:underline">
+            <.link navigate={~p"/#{user["username"]}"} class="font-semibold text-primary hover:underline">
               <%= user["name"] || user["username"] %>
             </.link>
             <p class="text-xs text-slate-500">@<%= user["username"] %></p>

@@ -111,7 +111,7 @@ defmodule CyaneaWeb.OrganizationLive.Members do
               value={@search_username}
               placeholder="Search by username..."
               phx-debounce="300"
-              class="flex-1 rounded-lg border-slate-300 text-sm shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-600 dark:bg-slate-700"
+              class="flex-1 rounded-lg border-slate-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-700"
             />
           </div>
         </form>
@@ -133,7 +133,7 @@ defmodule CyaneaWeb.OrganizationLive.Members do
               phx-click="add-member"
               phx-value-user_id={@search_result.id}
               phx-value-role="member"
-              class="rounded-lg bg-cyan-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-700"
+              class="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700"
             >
               Add as member
             </button>
@@ -169,7 +169,7 @@ defmodule CyaneaWeb.OrganizationLive.Members do
               class="h-8 w-8 rounded-full"
             />
             <div>
-              <.link navigate={~p"/#{membership.user.username}"} class="text-sm font-medium text-slate-900 hover:text-cyan-600 dark:text-white">
+              <.link navigate={~p"/#{membership.user.username}"} class="text-sm font-medium text-slate-900 hover:text-primary dark:text-white">
                 <%= membership.user.name || membership.user.username %>
               </.link>
               <p class="text-xs text-slate-500">@<%= membership.user.username %></p>

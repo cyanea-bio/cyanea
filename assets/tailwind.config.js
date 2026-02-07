@@ -6,6 +6,7 @@ const fs = require("fs")
 const path = require("path")
 
 module.exports = {
+  presets: [require("./tailwind-preset.cjs")],
   content: [
     "./js/**/*.js",
     "../lib/cyanea_web.ex",
@@ -13,15 +14,7 @@ module.exports = {
   ],
   darkMode: "class",
   theme: {
-    extend: {
-      colors: {
-        brand: "#0891b2",
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-      },
-    },
+    extend: {},
   },
   plugins: [
     require("@tailwindcss/forms"),
@@ -31,8 +24,10 @@ module.exports = {
     plugin(({addVariant}) => addVariant("phx-change-loading", [".phx-change-loading&", ".phx-change-loading &"])),
 
     // Embeds Heroicons (https://heroicons.com) into your app.css bundle
+    // Only loads if the optimized SVGs directory exists (heroicons < 0.5)
     plugin(function({matchComponents, theme}) {
       let iconsDir = path.join(__dirname, "../deps/heroicons/optimized")
+      if (!fs.existsSync(iconsDir)) return
       let values = {}
       let icons = [
         ["", "/24/outline"],
@@ -41,9 +36,11 @@ module.exports = {
         ["-micro", "/16/solid"]
       ]
       icons.forEach(([suffix, dir]) => {
-        fs.readdirSync(path.join(iconsDir, dir)).forEach(file => {
+        let fullDir = path.join(iconsDir, dir)
+        if (!fs.existsSync(fullDir)) return
+        fs.readdirSync(fullDir).forEach(file => {
           let name = path.basename(file, ".svg") + suffix
-          values[name] = {name, fullPath: path.join(iconsDir, dir, file)}
+          values[name] = {name, fullPath: path.join(fullDir, file)}
         })
       })
       matchComponents({

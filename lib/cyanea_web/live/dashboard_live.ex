@@ -28,7 +28,7 @@ defmodule CyaneaWeb.DashboardLive do
           <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Your repositories</h2>
           <.link
             navigate={~p"/new"}
-            class="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-cyan-700"
+            class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700"
           >
             New repository
           </.link>
@@ -43,7 +43,7 @@ defmodule CyaneaWeb.DashboardLive do
               <div>
                 <.link
                   navigate={~p"/#{@current_user.username}/#{repo.slug}"}
-                  class="font-semibold text-cyan-600 hover:underline"
+                  class="font-semibold text-primary hover:underline"
                 >
                   <%= repo.name %>
                 </.link>
@@ -76,7 +76,7 @@ defmodule CyaneaWeb.DashboardLive do
             <div class="mt-4">
               <.link
                 navigate={~p"/new"}
-                class="inline-flex items-center rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-cyan-700"
+                class="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700"
               >
                 New repository
               </.link>
@@ -110,7 +110,7 @@ defmodule CyaneaWeb.DashboardLive do
           <div class="mt-3">
             <.link
               navigate={~p"/organizations/new"}
-              class="inline-flex items-center gap-1 text-sm font-medium text-cyan-600 hover:text-cyan-700"
+              class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-700"
             >
               <.icon name="hero-plus" class="h-4 w-4" />
               New organization

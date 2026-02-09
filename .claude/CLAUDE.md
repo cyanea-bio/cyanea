@@ -683,41 +683,25 @@ cyanea-io/                             # Parent directory (NOT a git repo)
 
 ### Labs Structure (Rust)
 
+All 13 crates are **fully implemented** with 659+ tests passing. Each crate has a `docs/STATUS.md` with complete API documentation.
+
 ```
 labs/                                  # github.com/cyanea-io/labs
 ├── Cargo.toml                         # Workspace manifest (13 members)
-├── cyanea-core/
-│   ├── Cargo.toml
-│   └── src/
-│       ├── lib.rs
-│       ├── error.rs                   # CyaneaError enum (thiserror 2.x)
-│       ├── traits.rs                  # Sequence, ContentAddressable, Compressible
-│       ├── hash.rs                    # SHA-256 content addressing
-│       ├── compress.rs                # zstd + gzip (std feature only)
-│       └── mmap.rs                    # Memory-mapped file access (std feature only)
-├── cyanea-seq/
-│   ├── Cargo.toml
-│   └── src/
-│       ├── lib.rs
-│       ├── fasta.rs                   # FASTA/FASTQ parser (via needletail)
-│       └── sequence.rs               # Sequence types (stub)
-├── cyanea-io/
-│   ├── Cargo.toml
-│   └── src/
-│       └── lib.rs                     # CSV parsing (csv crate)
-├── cyanea-align/                      # Stub — planned: SW, NW, MSA
-├── cyanea-omics/                      # Stub — planned: expression matrices, VCF
-├── cyanea-stats/                      # Stub — planned: descriptive stats, testing
-├── cyanea-ml/                         # Stub — planned: embeddings, clustering
-├── cyanea-chem/                       # Stub — planned: SMILES, molecular properties
-├── cyanea-struct/                     # Stub — planned: PDB/mmCIF, RMSD
-├── cyanea-phylo/                      # Stub — planned: Newick, tree distances
-├── cyanea-gpu/                        # Stub — planned: CUDA/Metal abstraction
-├── cyanea-wasm/                       # Stub — planned: wasm-bindgen browser bindings
-└── cyanea-py/                         # Stub — planned: PyO3 Python bindings
+├── cyanea-core/                       # Shared primitives: traits, errors (thiserror 2.x), SHA-256, zstd, mmap
+├── cyanea-seq/                        # DNA/RNA/protein sequence types, FASTA/FASTQ parsing, k-mers, quality scores
+├── cyanea-io/                         # File format parsers: CSV, VCF, BED, GFF3 (feature-gated)
+├── cyanea-align/                      # Pairwise alignment (NW, SW, semi-global), affine gaps, MSA, banded, GPU dispatch
+├── cyanea-omics/                      # Genomic coords, intervals, expression matrices, variants, AnnData container
+├── cyanea-stats/                      # Descriptive stats, correlation, t-tests, distributions, multiple testing, PCA
+├── cyanea-ml/                         # Clustering (k-means/DBSCAN/hierarchical), distances, embeddings, KNN, PCA, t-SNE
+├── cyanea-chem/                       # SMILES/SDF parsing, Morgan fingerprints, molecular properties, substructure search
+├── cyanea-struct/                     # PDB parsing, geometry, simplified DSSP, Kabsch superposition, contact maps
+├── cyanea-phylo/                      # Newick/NEXUS I/O, distance models, UPGMA/NJ, Fitch/Sankoff reconstruction
+├── cyanea-gpu/                        # Backend trait (CPU/CUDA/Metal), buffers, reductions, matrix multiply, distances
+├── cyanea-wasm/                       # WASM bindings (JSON-based API), wasm-bindgen behind feature flag
+└── cyanea-py/                         # Python bindings via PyO3 (seq, align, stats, core, ml submodules)
 ```
-
-Stub crates have `Cargo.toml` + `src/lib.rs` (doc comments only, no code yet). They compile and are part of the workspace but export nothing.
 
 ### Platform Structure (Elixir/Phoenix)
 

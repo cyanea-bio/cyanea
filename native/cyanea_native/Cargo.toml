@@ -26,6 +26,15 @@ cyanea-struct = { path = "../../../labs/cyanea-struct" }
 cyanea-phylo = { path = "../../../labs/cyanea-phylo" }
 cyanea-gpu = { path = "../../../labs/cyanea-gpu" }
 
+[features]
+default = ["parallel"]
+parallel = [
+    "cyanea-align/parallel",
+    "cyanea-ml/parallel",
+    "cyanea-stats/parallel",
+    "cyanea-gpu/parallel",
+]
+
 [profile.release]
 lto = true
 opt-level = 3

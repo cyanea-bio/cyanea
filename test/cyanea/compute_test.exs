@@ -164,6 +164,194 @@ defmodule Cyanea.ComputeTest do
   end
 
   # ===========================================================================
+  # File format stats (VCF / BED / GFF3)
+  # ===========================================================================
+
+  describe "file format stats" do
+    test "vcf_stats returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.vcf_stats("/tmp/test.vcf")
+    end
+
+    test "bed_stats returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.bed_stats("/tmp/test.bed")
+    end
+
+    test "gff3_stats returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.gff3_stats("/tmp/test.gff3")
+    end
+  end
+
+  # ===========================================================================
+  # MSA
+  # ===========================================================================
+
+  describe "progressive_msa" do
+    test "returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.progressive_msa(["ATCG", "ATCG"])
+    end
+
+    test "accepts mode parameter" do
+      assert {:error, :nif_not_loaded} = Compute.progressive_msa(["MVLK", "MVLK"], "protein")
+    end
+  end
+
+  # ===========================================================================
+  # ML
+  # ===========================================================================
+
+  describe "ML clustering" do
+    test "kmeans returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.kmeans([0.0, 0.0, 1.0, 1.0], 2, 2)
+    end
+
+    test "kmeans accepts optional parameters" do
+      assert {:error, :nif_not_loaded} = Compute.kmeans([0.0, 0.0, 1.0, 1.0], 2, 2, 50, 123)
+    end
+
+    test "dbscan returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.dbscan([0.0, 0.0, 1.0, 1.0], 2, 0.5, 2)
+    end
+
+    test "dbscan accepts metric parameter" do
+      assert {:error, :nif_not_loaded} = Compute.dbscan([0.0, 0.0], 2, 0.5, 2, "cosine")
+    end
+  end
+
+  describe "ML dimensionality reduction" do
+    test "pca returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.pca([1.0, 2.0, 3.0, 4.0], 2, 1)
+    end
+
+    test "tsne returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.tsne([1.0, 2.0, 3.0, 4.0], 2)
+    end
+
+    test "tsne accepts optional parameters" do
+      assert {:error, :nif_not_loaded} = Compute.tsne([1.0, 2.0, 3.0, 4.0], 2, 2, 5.0, 100)
+    end
+  end
+
+  describe "ML embeddings and distances" do
+    test "kmer_embedding returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.kmer_embedding("ATCGATCG", 3)
+    end
+
+    test "kmer_embedding accepts alphabet parameter" do
+      assert {:error, :nif_not_loaded} = Compute.kmer_embedding("MVLKGAA", 2, "protein")
+    end
+
+    test "batch_embed returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.batch_embed(["ATCG", "GCTA"], 3)
+    end
+
+    test "pairwise_distances returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.pairwise_distances([0.0, 0.0, 1.0, 1.0], 2)
+    end
+
+    test "pairwise_distances accepts metric parameter" do
+      assert {:error, :nif_not_loaded} = Compute.pairwise_distances([0.0, 0.0], 2, "manhattan")
+    end
+  end
+
+  # ===========================================================================
+  # Chemistry
+  # ===========================================================================
+
+  describe "chemistry functions" do
+    test "smiles_properties returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.smiles_properties("CCO")
+    end
+
+    test "smiles_fingerprint returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.smiles_fingerprint("CCO")
+    end
+
+    test "smiles_fingerprint accepts radius and nbits" do
+      assert {:error, :nif_not_loaded} = Compute.smiles_fingerprint("CCO", 3, 1024)
+    end
+
+    test "tanimoto returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.tanimoto("CCO", "CC")
+    end
+
+    test "tanimoto accepts radius and nbits" do
+      assert {:error, :nif_not_loaded} = Compute.tanimoto("CCO", "CC", 3, 1024)
+    end
+
+    test "smiles_substructure returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.smiles_substructure("c1ccccc1O", "c1ccccc1")
+    end
+  end
+
+  # ===========================================================================
+  # Structures
+  # ===========================================================================
+
+  describe "structure functions" do
+    @sample_pdb "HEADER    TEST\nATOM      1  CA  ALA A   1       1.0   2.0   3.0  1.00  0.00           C\nEND\n"
+
+    test "pdb_info returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.pdb_info(@sample_pdb)
+    end
+
+    test "pdb_file_info returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.pdb_file_info("/tmp/test.pdb")
+    end
+
+    test "pdb_secondary_structure returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.pdb_secondary_structure(@sample_pdb, "A")
+    end
+
+    test "pdb_rmsd returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.pdb_rmsd(@sample_pdb, @sample_pdb, "A", "A")
+    end
+  end
+
+  # ===========================================================================
+  # Phylogenetics
+  # ===========================================================================
+
+  describe "phylogenetics functions" do
+    test "newick_info returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.newick_info("((A:0.1,B:0.2):0.3,C:0.4);")
+    end
+
+    test "newick_robinson_foulds returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.newick_robinson_foulds("((A,B),C);", "((A,C),B);")
+    end
+
+    test "evolutionary_distance returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.evolutionary_distance("ATCGATCG", "ATCAATCG")
+    end
+
+    test "evolutionary_distance accepts model parameter" do
+      assert {:error, :nif_not_loaded} = Compute.evolutionary_distance("ATCG", "ATCA", "k2p")
+    end
+
+    test "build_upgma returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.build_upgma(["ATCG", "ATCG"], ["A", "B"])
+    end
+
+    test "build_upgma accepts model parameter" do
+      assert {:error, :nif_not_loaded} = Compute.build_upgma(["ATCG", "ATCG"], ["A", "B"], "jc")
+    end
+
+    test "build_nj returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.build_nj(["ATCG", "ATCG"], ["A", "B"])
+    end
+  end
+
+  # ===========================================================================
+  # GPU
+  # ===========================================================================
+
+  describe "gpu functions" do
+    test "gpu_info returns nif_not_loaded without NIF" do
+      assert {:error, :nif_not_loaded} = Compute.gpu_info()
+    end
+  end
+
+  # ===========================================================================
   # Guard clauses
   # ===========================================================================
 
@@ -178,6 +366,42 @@ defmodule Cyanea.ComputeTest do
 
     test "sequence_kmers rejects non-integer k" do
       assert_raise FunctionClauseError, fn -> Compute.sequence_kmers("ATCG", "3") end
+    end
+
+    test "kmeans rejects non-list data" do
+      assert_raise FunctionClauseError, fn -> Compute.kmeans("not a list", 2, 2) end
+    end
+
+    test "kmeans rejects non-integer n_features" do
+      assert_raise FunctionClauseError, fn -> Compute.kmeans([1.0], "2", 2) end
+    end
+
+    test "pca rejects non-integer n_components" do
+      assert_raise FunctionClauseError, fn -> Compute.pca([1.0], 1, "2") end
+    end
+
+    test "smiles_properties rejects non-binary" do
+      assert_raise FunctionClauseError, fn -> Compute.smiles_properties(123) end
+    end
+
+    test "pdb_info rejects non-binary" do
+      assert_raise FunctionClauseError, fn -> Compute.pdb_info(123) end
+    end
+
+    test "newick_info rejects non-binary" do
+      assert_raise FunctionClauseError, fn -> Compute.newick_info(123) end
+    end
+
+    test "build_upgma rejects non-list sequences" do
+      assert_raise FunctionClauseError, fn -> Compute.build_upgma("ATCG", ["A"], "p") end
+    end
+
+    test "kmer_embedding rejects non-binary sequence" do
+      assert_raise FunctionClauseError, fn -> Compute.kmer_embedding(123, 3) end
+    end
+
+    test "dbscan rejects non-number eps" do
+      assert_raise FunctionClauseError, fn -> Compute.dbscan([1.0], 1, "bad", 2) end
     end
   end
 end

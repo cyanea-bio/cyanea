@@ -15,13 +15,13 @@ defmodule Cyanea.Native do
   - **Statistics** — Descriptive stats, correlation, hypothesis testing, p-value correction (cyanea-stats)
   - **Omics** — Variant classification, genomic intervals, expression matrices (cyanea-omics)
 
-  ## Planned
-
-  - **ML** — Embeddings, clustering (cyanea-ml)
-  - **Chemistry** — SMILES parsing, molecular properties (cyanea-chem)
-  - **Structures** — PDB/mmCIF parsing, RMSD (cyanea-struct)
-  - **Phylogenetics** — Newick parsing, tree distances (cyanea-phylo)
-  - **GPU** — Backend detection, GPU-accelerated compute (cyanea-gpu)
+  - **File Formats** — VCF, BED, GFF3 stats (cyanea-io)
+  - **MSA** — Progressive multiple sequence alignment (cyanea-align)
+  - **ML** — Clustering, PCA, t-SNE, embeddings, distances (cyanea-ml)
+  - **Chemistry** — SMILES properties, fingerprints, substructure (cyanea-chem)
+  - **Structures** — PDB parsing, secondary structure, RMSD (cyanea-struct)
+  - **Phylogenetics** — Newick parsing, tree distances, tree building (cyanea-phylo)
+  - **GPU** — Backend detection (cyanea-gpu)
   """
 
   use Rustler,
@@ -107,6 +107,15 @@ defmodule Cyanea.Native do
   @doc "Get preview of CSV file (first N rows as JSON)"
   def csv_preview(_path, _limit \\ 100), do: :erlang.nif_error(:nif_not_loaded)
 
+  @doc "Get statistics from a VCF file (variant counts, chromosomes)"
+  def vcf_stats(_path), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Get statistics from a BED file (record count, total bases, chromosomes)"
+  def bed_stats(_path), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Get statistics from a GFF3 file (gene/transcript/exon counts, chromosomes)"
+  def gff3_stats(_path), do: :erlang.nif_error(:nif_not_loaded)
+
   # ===========================================================================
   # cyanea-align — Sequence Alignment
   # ===========================================================================
@@ -123,6 +132,9 @@ defmodule Cyanea.Native do
 
   @doc "Batch-align a list of {query, target} DNA pairs (runs on DirtyCpu scheduler)"
   def align_batch_dna(_pairs, _mode), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Progressive multiple sequence alignment. Mode: \"dna\" or \"protein\""
+  def progressive_msa(_sequences, _mode), do: :erlang.nif_error(:nif_not_loaded)
 
   # ===========================================================================
   # cyanea-stats — Statistical Methods
@@ -176,41 +188,97 @@ defmodule Cyanea.Native do
   def log_transform_matrix(_data, _pseudocount), do: :erlang.nif_error(:nif_not_loaded)
 
   # ===========================================================================
-  # cyanea-ml — ML Primitives (planned)
+  # cyanea-ml — ML Primitives
   # ===========================================================================
 
-  # def embed_sequences(_sequences, _model), do: :erlang.nif_error(:nif_not_loaded)
-  # def cluster(_data, _method, _k), do: :erlang.nif_error(:nif_not_loaded)
+  @doc "K-means clustering. Data is a flat list (row-major), n_features per row"
+  def kmeans(_data, _n_features, _k, _max_iter, _seed),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "DBSCAN clustering. Metric: \"euclidean\", \"manhattan\", or \"cosine\""
+  def dbscan(_data, _n_features, _eps, _min_samples, _metric),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Principal component analysis on flat row-major data"
+  def pca(_data, _n_features, _n_components), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "t-SNE dimensionality reduction on flat row-major data"
+  def tsne(_data, _n_features, _n_components, _perplexity, _n_iter),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Compute normalized k-mer frequency embedding for a sequence"
+  def kmer_embedding(_sequence, _k, _alphabet), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Batch k-mer frequency embeddings for multiple sequences (DirtyCpu)"
+  def batch_embed(_sequences, _k, _alphabet), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Compute pairwise distance matrix (condensed upper-triangle)"
+  def pairwise_distances(_data, _n_features, _metric),
+    do: :erlang.nif_error(:nif_not_loaded)
 
   # ===========================================================================
-  # cyanea-chem — Chemistry / Small Molecules (planned)
+  # cyanea-chem — Chemistry / Small Molecules
   # ===========================================================================
 
-  # def parse_smiles(_smiles), do: :erlang.nif_error(:nif_not_loaded)
-  # def molecular_properties(_smiles), do: :erlang.nif_error(:nif_not_loaded)
+  @doc "Parse SMILES and compute molecular properties"
+  def smiles_properties(_smiles), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Compute Morgan fingerprint as byte vector. Returns binary of ceil(nbits/8) bytes"
+  def smiles_fingerprint(_smiles, _radius, _nbits),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Compute Tanimoto similarity between two SMILES via Morgan fingerprints"
+  def tanimoto(_smiles_a, _smiles_b, _radius, _nbits),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Check if target SMILES contains the pattern SMILES as a substructure"
+  def smiles_substructure(_target, _pattern), do: :erlang.nif_error(:nif_not_loaded)
 
   # ===========================================================================
-  # cyanea-struct — 3D Structures (planned)
+  # cyanea-struct — 3D Structures
   # ===========================================================================
 
-  # def parse_pdb(_path), do: :erlang.nif_error(:nif_not_loaded)
-  # def calc_rmsd(_structure_a, _structure_b),
-  #   do: :erlang.nif_error(:nif_not_loaded)
+  @doc "Parse PDB text and return structure info (chains, residues, atoms)"
+  def pdb_info(_pdb_text), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Parse a PDB file from disk and return structure info (DirtyCpu)"
+  def pdb_file_info(_path), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Assign secondary structure (simplified DSSP) for a chain"
+  def pdb_secondary_structure(_pdb_text, _chain_id),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Compute RMSD between CA atoms of two chains from PDB text"
+  def pdb_rmsd(_pdb_a, _pdb_b, _chain_a, _chain_b),
+    do: :erlang.nif_error(:nif_not_loaded)
 
   # ===========================================================================
-  # cyanea-phylo — Phylogenetics (planned)
+  # cyanea-phylo — Phylogenetics
   # ===========================================================================
 
-  # def parse_newick(_newick_string), do: :erlang.nif_error(:nif_not_loaded)
-  # def tree_distance(_tree_a, _tree_b), do: :erlang.nif_error(:nif_not_loaded)
+  @doc "Parse a Newick string and return tree info (leaf count, names, canonical Newick)"
+  def newick_info(_newick), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Compute Robinson-Foulds distance between two Newick trees"
+  def newick_robinson_foulds(_newick_a, _newick_b),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Compute evolutionary distance between two sequences. Model: \"p\", \"jc\", or \"k2p\""
+  def evolutionary_distance(_seq_a, _seq_b, _model),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Build UPGMA tree from sequences. Returns Newick string"
+  def build_upgma(_sequences, _names, _model), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Build Neighbor-Joining tree from sequences. Returns Newick string"
+  def build_nj(_sequences, _names, _model), do: :erlang.nif_error(:nif_not_loaded)
 
   # ===========================================================================
-  # cyanea-gpu — GPU Compute (planned)
+  # cyanea-gpu — GPU Compute
   # ===========================================================================
 
-  # def gpu_available(), do: :erlang.nif_error(:nif_not_loaded)
-  # def gpu_batch_align(_sequences, _reference),
-  #   do: :erlang.nif_error(:nif_not_loaded)
+  @doc "Get GPU backend info (available backends, current selection)"
+  def gpu_info(), do: :erlang.nif_error(:nif_not_loaded)
 end
 
 # ===========================================================================
@@ -283,19 +351,85 @@ defmodule Cyanea.Native.ExpressionSummary do
              :feature_means, :sample_means]
 end
 
-# --- Planned bridge structs (uncomment as Rust NIFs are implemented) ---
+# --- cyanea-io (format stats) ---
 
-# defmodule Cyanea.Native.MolecularProperties do
-#   @moduledoc "Molecular properties (cyanea-chem)"
-#   defstruct [:molecular_weight, :logp, :polar_surface_area, :formula]
-# end
+defmodule Cyanea.Native.VcfStats do
+  @moduledoc "VCF file statistics (cyanea-io)"
+  defstruct [:variant_count, :snv_count, :indel_count, :pass_count, :chromosomes]
+end
 
-# defmodule Cyanea.Native.StructureInfo do
-#   @moduledoc "Macromolecular structure metadata (cyanea-struct)"
-#   defstruct [:num_atoms, :num_residues, :num_chains, :resolution]
-# end
+defmodule Cyanea.Native.BedStats do
+  @moduledoc "BED file statistics (cyanea-io)"
+  defstruct [:record_count, :total_bases, :chromosomes]
+end
 
-# defmodule Cyanea.Native.PhyloTree do
-#   @moduledoc "Phylogenetic tree (cyanea-phylo)"
-#   defstruct [:num_leaves, :num_internal, :is_rooted, :newick]
-# end
+defmodule Cyanea.Native.GffStats do
+  @moduledoc "GFF3 file statistics (cyanea-io)"
+  defstruct [:gene_count, :transcript_count, :exon_count,
+             :protein_coding_count, :chromosomes]
+end
+
+# --- cyanea-align (MSA) ---
+
+defmodule Cyanea.Native.MsaResult do
+  @moduledoc "Multiple sequence alignment result (cyanea-align)"
+  defstruct [:aligned, :n_sequences, :n_columns, :conservation]
+end
+
+# --- cyanea-ml ---
+
+defmodule Cyanea.Native.KMeansResult do
+  @moduledoc "K-means clustering result (cyanea-ml)"
+  defstruct [:labels, :centroids, :n_features, :inertia, :n_iter]
+end
+
+defmodule Cyanea.Native.DbscanResult do
+  @moduledoc "DBSCAN clustering result (cyanea-ml)"
+  defstruct [:labels, :n_clusters]
+end
+
+defmodule Cyanea.Native.PcaResult do
+  @moduledoc "PCA result (cyanea-ml)"
+  defstruct [:transformed, :explained_variance, :explained_variance_ratio,
+             :components, :n_components, :n_features]
+end
+
+defmodule Cyanea.Native.TsneResult do
+  @moduledoc "t-SNE result (cyanea-ml)"
+  defstruct [:embedding, :n_samples, :n_components, :kl_divergence]
+end
+
+# --- cyanea-chem ---
+
+defmodule Cyanea.Native.MolecularProperties do
+  @moduledoc "Molecular properties from SMILES (cyanea-chem)"
+  defstruct [:formula, :weight, :exact_mass, :hbd, :hba,
+             :rotatable_bonds, :ring_count, :aromatic_ring_count,
+             :atom_count, :bond_count]
+end
+
+# --- cyanea-struct ---
+
+defmodule Cyanea.Native.PdbInfo do
+  @moduledoc "PDB structure info (cyanea-struct)"
+  defstruct [:id, :chain_count, :residue_count, :atom_count, :chains]
+end
+
+defmodule Cyanea.Native.SecondaryStructure do
+  @moduledoc "Secondary structure assignment (cyanea-struct)"
+  defstruct [:assignments, :helix_fraction, :sheet_fraction, :coil_fraction]
+end
+
+# --- cyanea-phylo ---
+
+defmodule Cyanea.Native.NewickInfo do
+  @moduledoc "Newick tree info (cyanea-phylo)"
+  defstruct [:leaf_count, :leaf_names, :newick]
+end
+
+# --- cyanea-gpu ---
+
+defmodule Cyanea.Native.GpuInfo do
+  @moduledoc "GPU backend info (cyanea-gpu)"
+  defstruct [:available, :backend]
+end

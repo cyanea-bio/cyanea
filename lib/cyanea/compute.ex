@@ -2,10 +2,22 @@ defmodule Cyanea.Compute do
   @moduledoc """
   High-level compute functions backed by Rust NIFs.
 
-  Wraps `Cyanea.Native` with ergonomic APIs for sequence analysis,
-  file formats, alignment, statistics, omics, ML, chemistry,
-  structures, phylogenetics, and GPU compute. All functions return
-  `{:ok, result}` or `{:error, reason}`.
+  > **Deprecated:** This flat module is retained for backward compatibility.
+  > Prefer the domain-specific context modules instead:
+  >
+  > | Module | Domain |
+  > |--------|--------|
+  > | `Cyanea.Seq` | Sequence validation, manipulation, pattern matching |
+  > | `Cyanea.Align` | Pairwise and multiple sequence alignment |
+  > | `Cyanea.Stats` | Descriptive statistics, hypothesis testing |
+  > | `Cyanea.ML` | Clustering, reduction, classification |
+  > | `Cyanea.Chem` | SMILES, fingerprints, similarity |
+  > | `Cyanea.StructBio` | PDB/mmCIF structure analysis |
+  > | `Cyanea.Phylo` | Phylogenetic trees and distances |
+  > | `Cyanea.Formats` | CSV, VCF, BED, GFF3, SAM, BAM parsing |
+  > | `Cyanea.Omics` | Variants, intervals, expression matrices |
+  > | `Cyanea.Core` | SHA256, zstd, gzip |
+  > | `Cyanea.GPU` | GPU-accelerated compute |
   """
 
   alias Cyanea.Native

@@ -166,3 +166,106 @@ pub fn poa_consensus(sequences: Vec<Vec<u8>>) -> Result<Vec<u8>, String> {
     }
     Ok(graph.consensus())
 }
+
+// ===========================================================================
+// CIGAR utilities
+// ===========================================================================
+
+#[rustler::nif]
+pub fn parse_cigar(cigar: String) -> Result<Vec<(String, usize)>, String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    Ok(ops.iter().map(|op| (op.code().to_string(), op.len())).collect())
+}
+
+#[rustler::nif]
+pub fn validate_cigar(cigar: String) -> Result<bool, String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    cyanea_align::cigar::validate_cigar(&ops).map_err(to_nif_error)?;
+    Ok(true)
+}
+
+#[rustler::nif]
+pub fn cigar_stats(cigar: String) -> Result<CigarStatsNif, String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    let (soft, hard) = cyanea_align::cigar::clipped_bases(&ops);
+    Ok(CigarStatsNif {
+        cigar_string: cyanea_align::cigar::cigar_string(&ops),
+        reference_consumed: cyanea_align::cigar::reference_consumed(&ops),
+        query_consumed: cyanea_align::cigar::query_consumed(&ops),
+        alignment_columns: cyanea_align::cigar::alignment_columns(&ops),
+        identity: cyanea_align::cigar::identity(&ops),
+        gap_count: cyanea_align::cigar::gap_count(&ops),
+        gap_bases: cyanea_align::cigar::gap_bases(&ops),
+        soft_clipped: soft,
+        hard_clipped: hard,
+    })
+}
+
+#[rustler::nif]
+pub fn cigar_to_alignment(
+    cigar: String,
+    query: Vec<u8>,
+    target: Vec<u8>,
+) -> Result<(Vec<u8>, Vec<u8>), String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    cyanea_align::cigar::cigar_to_alignment(&ops, &query, &target).map_err(to_nif_error)
+}
+
+#[rustler::nif]
+pub fn alignment_to_cigar(query: Vec<u8>, target: Vec<u8>) -> Result<String, String> {
+    let ops =
+        cyanea_align::cigar::alignment_to_cigar(&query, &target).map_err(to_nif_error)?;
+    Ok(cyanea_align::cigar::cigar_string(&ops))
+}
+
+#[rustler::nif]
+pub fn generate_md_tag(
+    cigar: String,
+    query: Vec<u8>,
+    reference: Vec<u8>,
+) -> Result<String, String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    cyanea_align::cigar::generate_md_tag(&ops, &query, &reference).map_err(to_nif_error)
+}
+
+#[rustler::nif]
+pub fn merge_cigar(cigar: String) -> Result<String, String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    Ok(cyanea_align::cigar::cigar_string(
+        &cyanea_align::cigar::merge_adjacent(&ops),
+    ))
+}
+
+#[rustler::nif]
+pub fn reverse_cigar(cigar: String) -> Result<String, String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    Ok(cyanea_align::cigar::cigar_string(
+        &cyanea_align::cigar::reverse_cigar(&ops),
+    ))
+}
+
+#[rustler::nif]
+pub fn collapse_cigar(cigar: String) -> Result<String, String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    Ok(cyanea_align::cigar::cigar_string(
+        &cyanea_align::cigar::collapse_matches(&ops),
+    ))
+}
+
+#[rustler::nif]
+pub fn hard_clip_to_soft(cigar: String) -> Result<String, String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    Ok(cyanea_align::cigar::cigar_string(
+        &cyanea_align::cigar::hard_clip_to_soft(&ops),
+    ))
+}
+
+#[rustler::nif]
+pub fn split_cigar(cigar: String, ref_pos: usize) -> Result<(String, String), String> {
+    let ops = cyanea_align::cigar::parse_cigar(&cigar).map_err(to_nif_error)?;
+    let (left, right) = cyanea_align::cigar::split_at_reference(&ops, ref_pos);
+    Ok((
+        cyanea_align::cigar::cigar_string(&left),
+        cyanea_align::cigar::cigar_string(&right),
+    ))
+}

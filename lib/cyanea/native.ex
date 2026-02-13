@@ -202,6 +202,41 @@ defmodule Cyanea.Native do
   @doc "Compute consensus from multiple sequences using Partial Order Alignment"
   def poa_consensus(_sequences), do: :erlang.nif_error(:nif_not_loaded)
 
+  # --- CIGAR utilities -------------------------------------------------------
+
+  @doc "Parse a SAM CIGAR string into a list of {op_char, length} tuples"
+  def parse_cigar(_cigar), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Validate a CIGAR string against SAM spec rules. Returns true or raises"
+  def validate_cigar(_cigar), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Compute statistics from a CIGAR string"
+  def cigar_stats(_cigar), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Reconstruct gapped alignment from CIGAR and ungapped sequences"
+  def cigar_to_alignment(_cigar, _query, _target), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Extract a CIGAR string from a gapped alignment (using =/X distinction)"
+  def alignment_to_cigar(_query, _target), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Generate a SAM MD:Z tag from CIGAR and ungapped sequences"
+  def generate_md_tag(_cigar, _query, _reference), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Merge adjacent same-type CIGAR operations"
+  def merge_cigar(_cigar), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Reverse CIGAR operation order"
+  def reverse_cigar(_cigar), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Collapse =/X operations into M (alignment match)"
+  def collapse_cigar(_cigar), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Convert hard clips (H) to soft clips (S)"
+  def hard_clip_to_soft(_cigar), do: :erlang.nif_error(:nif_not_loaded)
+
+  @doc "Split CIGAR at a reference coordinate. Returns {left, right} CIGAR strings"
+  def split_cigar(_cigar, _ref_pos), do: :erlang.nif_error(:nif_not_loaded)
+
   # ===========================================================================
   # cyanea-stats — Statistical Methods
   # ===========================================================================
@@ -533,6 +568,13 @@ defmodule Cyanea.Native.AlignmentResult do
              :query_start, :query_end, :target_start, :target_end,
              :cigar, :identity, :num_matches, :num_mismatches,
              :num_gaps, :alignment_length]
+end
+
+defmodule Cyanea.Native.CigarStats do
+  @moduledoc "CIGAR string statistics (cyanea-align)"
+  defstruct [:cigar_string, :reference_consumed, :query_consumed,
+             :alignment_columns, :identity, :gap_count, :gap_bases,
+             :soft_clipped, :hard_clipped]
 end
 
 defmodule Cyanea.Native.MsaResult do

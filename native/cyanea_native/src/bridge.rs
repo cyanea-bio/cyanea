@@ -281,6 +281,20 @@ impl From<cyanea_align::AlignmentResult> for AlignmentResultNif {
 }
 
 #[derive(Debug, NifStruct)]
+#[module = "Cyanea.Native.CigarStats"]
+pub struct CigarStatsNif {
+    pub cigar_string: String,
+    pub reference_consumed: usize,
+    pub query_consumed: usize,
+    pub alignment_columns: usize,
+    pub identity: f64,
+    pub gap_count: usize,
+    pub gap_bases: usize,
+    pub soft_clipped: usize,
+    pub hard_clipped: usize,
+}
+
+#[derive(Debug, NifStruct)]
 #[module = "Cyanea.Native.MsaResult"]
 pub struct MsaResultNif {
     pub aligned: Vec<Vec<u8>>,

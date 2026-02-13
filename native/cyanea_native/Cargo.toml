@@ -15,8 +15,8 @@ rustler = "0.34"
 
 # Cyanea Labs
 cyanea-core = { path = "../../../labs/cyanea-core" }
-cyanea-seq = { path = "../../../labs/cyanea-seq" }
-cyanea-io = { path = "../../../labs/cyanea-io", features = ["vcf", "bed", "gff"] }
+cyanea-seq = { path = "../../../labs/cyanea-seq", features = ["minhash"] }
+cyanea-io = { path = "../../../labs/cyanea-io", features = ["vcf", "bed", "gff", "sam", "bam"] }
 cyanea-align = { path = "../../../labs/cyanea-align" }
 cyanea-omics = { path = "../../../labs/cyanea-omics" }
 cyanea-stats = { path = "../../../labs/cyanea-stats" }
@@ -25,6 +25,9 @@ cyanea-chem = { path = "../../../labs/cyanea-chem" }
 cyanea-struct = { path = "../../../labs/cyanea-struct" }
 cyanea-phylo = { path = "../../../labs/cyanea-phylo", features = ["ml"] }
 cyanea-gpu = { path = "../../../labs/cyanea-gpu" }
+
+# Serialization for opaque state (FM-index, random forest)
+bincode = "1"
 
 [features]
 default = ["parallel"]

@@ -18,12 +18,7 @@ defmodule CyaneaWeb.HomeLive do
     ~H"""
     <div class="flex min-h-[60vh] flex-col items-center justify-center text-center">
       <div class="mb-8">
-        <svg class="mx-auto h-24 w-24 text-primary" viewBox="0 0 32 32" fill="currentColor">
-          <circle cx="16" cy="12" r="8" opacity="0.9"/>
-          <line x1="10" y1="20" x2="8" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="16" y1="20" x2="16" y2="30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="22" y1="20" x2="24" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <img src={~p"/images/mascot.png"} alt="Cyanea mascot" class="mx-auto h-24 w-24 drop-shadow-lg" />
       </div>
 
       <h1 class="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
@@ -38,20 +33,20 @@ defmodule CyaneaWeb.HomeLive do
       <div class="mt-10 flex items-center justify-center gap-4">
         <.link
           navigate={~p"/auth/register"}
-          class="rounded-lg bg-primary px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-700"
+          class="rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-700"
         >
           Get started
         </.link>
         <.link
           navigate={~p"/explore"}
-          class="rounded-lg border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
+          class="rounded-xl border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
         >
           Explore
         </.link>
       </div>
 
       <div class="mt-16 grid gap-8 sm:grid-cols-3">
-        <div class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
           <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-primary dark:bg-primary-900/50">
             <.icon name="hero-document-text" class="h-6 w-6" />
           </div>
@@ -61,7 +56,7 @@ defmodule CyaneaWeb.HomeLive do
           </p>
         </div>
 
-        <div class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
           <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-primary dark:bg-primary-900/50">
             <.icon name="hero-circle-stack" class="h-6 w-6" />
           </div>
@@ -71,7 +66,7 @@ defmodule CyaneaWeb.HomeLive do
           </p>
         </div>
 
-        <div class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
           <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-primary dark:bg-primary-900/50">
             <.icon name="hero-users" class="h-6 w-6" />
           </div>

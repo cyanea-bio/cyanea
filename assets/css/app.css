@@ -27,7 +27,7 @@
 
   /* Card component */
   .card {
-    @apply rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800;
+    @apply rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition dark:border-slate-700 dark:bg-slate-800;
   }
 
   /* Badge styles */
@@ -49,6 +49,14 @@
 
   .badge-red {
     @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+
+  .badge-violet {
+    @apply bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200;
+  }
+
+  .badge-rose {
+    @apply bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200;
   }
 }
 

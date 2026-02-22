@@ -18,15 +18,24 @@ module.exports = {
                 "DEFAULT": "#06B6D4"
         },
         accent: {
-                "50": "#eef2ff",
-                "100": "#e0e7ff",
-                "200": "#c7d2fe",
-                "300": "#a5b4fc",
-                "400": "#818cf8",
-                "500": "#6366F1",
-                "600": "#4f46e5",
-                "700": "#4338ca",
-                "DEFAULT": "#6366F1"
+                "50": "#f5f3ff",
+                "100": "#ede9fe",
+                "200": "#ddd6fe",
+                "300": "#c4b5fd",
+                "400": "#a78bfa",
+                "500": "#8B5CF6",
+                "600": "#7c3aed",
+                "700": "#6d28d9",
+                "DEFAULT": "#8B5CF6"
+        },
+        rose: {
+                "50": "#fff1f2",
+                "100": "#ffe4e6",
+                "200": "#fecdd3",
+                "300": "#fda4af",
+                "400": "#fb7185",
+                "500": "#f43f5e",
+                "DEFAULT": "#f43f5e"
         },
         gray: {
                 "50": "#f8fafc",
@@ -53,16 +62,17 @@ module.exports = {
         mono: ["JetBrains Mono","SF Mono","Monaco","Consolas","monospace"],
       },
       borderRadius: {
-        "sm": "6px",
-        "md": "10px",
-        "lg": "16px",
+        "sm": "8px",
+        "md": "12px",
+        "lg": "20px",
+        "xl": "24px",
         "full": "9999px",
       },
       boxShadow: {
-        "sm": "0 0 0 1px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04)",
-        "md": "0 0 0 1px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.06)",
-        "lg": "0 0 0 1px rgba(0,0,0,0.03), 0 16px 40px -8px rgba(0,0,0,0.1)",
-        "accent": "0 0 0 1px rgba(6,182,212,0.08), 0 16px 40px -8px rgba(6,182,212,0.12)",
+        "sm": "0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)",
+        "md": "0 2px 8px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.03)",
+        "lg": "0 8px 30px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.02)",
+        "accent": "0 8px 30px rgba(6,182,212,0.1), 0 0 0 1px rgba(6,182,212,0.06)",
       },
       letterSpacing: {
         "tight": "-0.02em",

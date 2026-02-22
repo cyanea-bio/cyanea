@@ -22,7 +22,7 @@ defmodule CyaneaWeb.UIComponents do
   """
   attr :color, :atom,
     default: :gray,
-    values: ~w(gray primary accent success warning error emerald amber violet)a
+    values: ~w(gray primary accent success warning error emerald amber violet rose)a
 
   attr :size, :atom, default: :sm, values: ~w(xs sm)a
   attr :class, :string, default: nil
@@ -75,6 +75,9 @@ defmodule CyaneaWeb.UIComponents do
 
   defp badge_color_class(:violet),
     do: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
+
+  defp badge_color_class(:rose),
+    do: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"
 
   # ---------------------------------------------------------------------------
   # visibility_badge
@@ -194,7 +197,7 @@ defmodule CyaneaWeb.UIComponents do
     ~H"""
     <div
       class={[
-        "rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800",
+        "rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800",
         @header == [] && @footer == [] && @padding,
         @class
       ]}

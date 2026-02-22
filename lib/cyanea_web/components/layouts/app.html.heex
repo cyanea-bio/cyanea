@@ -2,12 +2,7 @@
   <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
     <div class="flex items-center gap-8">
       <a href={~p"/"} class="flex items-center gap-2">
-        <svg class="h-8 w-8 text-primary" viewBox="0 0 32 32" fill="currentColor">
-          <circle cx="16" cy="12" r="8" opacity="0.9"/>
-          <line x1="10" y1="20" x2="8" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="16" y1="20" x2="16" y2="30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="22" y1="20" x2="24" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <img src={~p"/images/icon.png"} alt="Cyanea" class="h-8 w-8 rounded-lg" />
         <span class="text-xl font-semibold text-slate-900 dark:text-white">Cyanea</span>
       </a>
 
@@ -22,7 +17,7 @@
       <!-- Search -->
       <button
         type="button"
-        class="hidden h-9 w-64 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 transition hover:border-slate-300 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 sm:flex"
+        class="hidden h-9 w-64 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 transition hover:border-slate-300 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 sm:flex"
         phx-click={JS.dispatch("open-command-palette")}
       >
         <.icon name="hero-magnifying-glass" class="h-4 w-4" />
@@ -31,7 +26,7 @@
       </button>
 
       <%= if @current_user do %>
-        <a href={~p"/new"} class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700">
+        <a href={~p"/new"} class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700">
           New
         </a>
 
@@ -59,7 +54,7 @@
         <a href={~p"/auth/login"} class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
           Sign in
         </a>
-        <a href={~p"/auth/register"} class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700">
+        <a href={~p"/auth/register"} class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700">
           Sign up
         </a>
       <% end %>
@@ -77,7 +72,7 @@
     <div class="flex items-center justify-between text-sm text-slate-500">
       <p>&copy; <%= DateTime.utc_now().year %> Cyanea. Open source.</p>
       <div class="flex items-center gap-6">
-        <a href="https://github.com/cyanea-io/cyanea" class="hover:text-slate-900 dark:hover:text-white">GitHub</a>
+        <a href="https://github.com/cyanea-bio/cyanea" class="hover:text-slate-900 dark:hover:text-white">GitHub</a>
         <a href="/docs" class="hover:text-slate-900 dark:hover:text-white">Docs</a>
       </div>
     </div>

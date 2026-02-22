@@ -209,7 +209,7 @@ defmodule CyaneaWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-primary px-4 py-2.5",
+        "phx-submit-loading:opacity-75 rounded-xl bg-primary px-4 py-2.5",
         "text-sm font-semibold text-white shadow-sm transition",
         "hover:bg-primary-700 active:bg-primary-800",
         "disabled:cursor-not-allowed disabled:opacity-50",

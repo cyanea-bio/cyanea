@@ -42,6 +42,18 @@ defmodule Cyanea.Storage do
   end
 
   @doc """
+  Downloads an object from S3. Returns `{:ok, binary}` or `{:error, reason}`.
+  """
+  def download(s3_key) do
+    ExAws.S3.get_object(bucket(), s3_key)
+    |> ExAws.request()
+    |> case do
+      {:ok, %{body: body}} -> {:ok, body}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc """
   Deletes an object from S3.
   """
   def delete(s3_key) do

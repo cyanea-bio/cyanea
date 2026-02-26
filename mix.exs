@@ -33,6 +33,9 @@ defmodule Cyanea.MixProject do
 
   defp deps do
     [
+      # Shared domain (schemas, contexts, workers)
+      {:cyanea_core, path: "../cyanea-core"},
+
       # Phoenix
       {:phoenix, "~> 1.8"},
       {:phoenix_ecto, "~> 4.6"},

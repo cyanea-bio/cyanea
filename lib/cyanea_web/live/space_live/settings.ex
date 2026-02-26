@@ -4,6 +4,7 @@ defmodule CyaneaWeb.SpaceLive.Settings do
   alias Cyanea.Billing
   alias Cyanea.Spaces
   alias Cyanea.Spaces.Space
+  alias CyaneaWeb.Components.OntologyPickerLive
 
   @impl true
   def mount(%{"username" => owner_name, "slug" => slug}, _session, socket) do
@@ -34,7 +35,8 @@ defmodule CyaneaWeb.SpaceLive.Settings do
            space: space,
            owner_name: owner_name,
            form: to_form(changeset),
-           can_go_private: can_go_private
+           can_go_private: can_go_private,
+           ontology_terms: space.ontology_terms || []
          )}
     end
   end
@@ -80,6 +82,19 @@ defmodule CyaneaWeb.SpaceLive.Settings do
 
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to delete space.")}
+    end
+  end
+
+  @impl true
+  def handle_info({OntologyPickerLive, :terms_updated, _id, terms}, socket) do
+    space = socket.assigns.space
+
+    case Spaces.update_space(space, %{ontology_terms: terms}) do
+      {:ok, space} ->
+        {:noreply, assign(socket, space: space, ontology_terms: terms)}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to update ontology terms.")}
     end
   end
 
@@ -151,6 +166,15 @@ defmodule CyaneaWeb.SpaceLive.Settings do
             <.button type="submit" phx-disable-with="Saving...">Save changes</.button>
           </:actions>
         </.simple_form>
+      </div>
+
+      <%!-- Ontology terms (separate section, saved independently via LiveComponent) --%>
+      <div class="mt-8 rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <.live_component
+          module={OntologyPickerLive}
+          id="space-ontology-picker"
+          selected_terms={@ontology_terms}
+        />
       </div>
 
       <%!-- Danger zone --%>

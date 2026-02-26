@@ -79,4 +79,13 @@ if config_env() == :prod do
   config :cyanea, :stripe_prices,
     pro_monthly_user: System.get_env("STRIPE_PRICE_PRO_USER"),
     pro_monthly_org: System.get_env("STRIPE_PRICE_PRO_ORG")
+
+  # DataCite DOI minting (optional)
+  if datacite_prefix = System.get_env("DATACITE_PREFIX") do
+    config :cyanea, :datacite,
+      prefix: datacite_prefix,
+      api_url: System.get_env("DATACITE_API_URL") || "https://api.datacite.org",
+      username: System.get_env("DATACITE_USERNAME"),
+      password: System.get_env("DATACITE_PASSWORD")
+  end
 end

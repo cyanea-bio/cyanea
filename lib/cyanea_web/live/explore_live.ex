@@ -21,7 +21,8 @@ defmodule CyaneaWeb.ExploreLive do
        active_tab: :spaces,
        sort: "recently_updated",
        user_results: [],
-       activity_events: []
+       activity_events: [],
+       ontology_filter: ""
      )}
   end
 
@@ -55,6 +56,16 @@ defmodule CyaneaWeb.ExploreLive do
     {:noreply, assign(socket, spaces: spaces, sort: sort)}
   end
 
+  def handle_event("filter-ontology", %{"ontology" => term}, socket) do
+    if String.trim(term) == "" do
+      spaces = load_spaces(socket.assigns.sort)
+      {:noreply, assign(socket, spaces: spaces, ontology_filter: "")}
+    else
+      spaces = filter_by_ontology(term)
+      {:noreply, assign(socket, spaces: spaces, ontology_filter: term)}
+    end
+  end
+
   defp load_spaces("most_starred"), do: Spaces.list_trending_spaces(limit: 50)
   defp load_spaces(_), do: Spaces.list_public_spaces()
 
@@ -86,6 +97,19 @@ defmodule CyaneaWeb.ExploreLive do
       where: s.visibility == "public"
     )
     |> Cyanea.Repo.all()
+  end
+
+  defp filter_by_ontology(term) do
+    term_lower = String.downcase(term)
+
+    Spaces.list_public_spaces()
+    |> Enum.filter(fn space ->
+      Enum.any?(space.ontology_terms || [], fn t ->
+        id = (t["id"] || "") |> String.downcase()
+        label = (t["label"] || "") |> String.downcase()
+        String.contains?(id, term_lower) or String.contains?(label, term_lower)
+      end)
+    end)
   end
 
   defp db_fallback_search(query) do
@@ -125,6 +149,30 @@ defmodule CyaneaWeb.ExploreLive do
             Activity
           </:tab>
         </.tabs>
+      </div>
+
+      <%!-- Ontology filter --%>
+      <div :if={@active_tab == :spaces} class="mt-4">
+        <form phx-change="filter-ontology" class="flex items-center gap-2">
+          <label class="text-sm text-slate-500">Ontology filter:</label>
+          <input
+            type="text"
+            name="ontology"
+            value={@ontology_filter}
+            placeholder="e.g. GO:0008150, Homo sapiens..."
+            phx-debounce="300"
+            class="w-64 rounded-lg border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+          />
+          <button
+            :if={@ontology_filter != ""}
+            type="button"
+            phx-click="filter-ontology"
+            phx-value-ontology=""
+            class="text-xs text-slate-500 hover:text-slate-700"
+          >
+            Clear
+          </button>
+        </form>
       </div>
 
       <%!-- Sort options (only for spaces tab when not searching) --%>

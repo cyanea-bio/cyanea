@@ -129,6 +129,9 @@ defmodule CyaneaWeb.Router do
       live "/:username/:slug/discussions", DiscussionLive.Index, :index
       live "/:username/:slug/discussions/:discussion_id", DiscussionLive.Show, :show
 
+      # File previews (public, access checked in mount)
+      live "/:username/:slug/files/:file_id", FilePreviewLive, :show
+
       # Content detail pages (public, access checked in mount)
       live "/:username/:slug/notebooks/:notebook_slug", NotebookLive.Show, :show
       live "/:username/:slug/protocols/:protocol_slug", ProtocolLive.Show, :show

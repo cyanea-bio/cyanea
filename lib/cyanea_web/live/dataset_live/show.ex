@@ -238,7 +238,14 @@ defmodule CyaneaWeb.DatasetLive.Show do
                     <td class="px-6 py-3">
                       <div class="flex items-center gap-3">
                         <.icon name="hero-document" class="h-5 w-5 text-slate-400 shrink-0" />
-                        <span class="text-sm font-medium text-slate-900 dark:text-white"><%= file.path %></span>
+                        <.link
+                          :if={file.blob}
+                          href={~p"/blobs/#{file.blob_id}/download"}
+                          class="text-sm font-medium text-primary hover:underline"
+                        >
+                          <%= file.path %>
+                        </.link>
+                        <span :if={!file.blob} class="text-sm font-medium text-slate-900 dark:text-white"><%= file.path %></span>
                       </div>
                     </td>
                     <td class="px-6 py-3 text-right text-xs text-slate-500">

@@ -38,6 +38,9 @@ defmodule Cyanea.Spaces.Space do
     field :tags, {:array, :string}, default: []
     field :ontology_terms, {:array, :map}, default: []
 
+    # Citation
+    field :doi, :string
+
     # Federation
     field :global_id, :string
     field :federation_policy, :string, default: "none"
@@ -77,6 +80,7 @@ defmodule Cyanea.Spaces.Space do
       :star_count,
       :tags,
       :ontology_terms,
+      :doi,
       :global_id,
       :federation_policy,
       :current_revision_id

@@ -4,6 +4,9 @@ import SequenceViewer from "./sequence_viewer.js"
 import AlignmentViewer from "./alignment_viewer.js"
 import TreeViewer from "./tree_viewer.js"
 import AutoSave from "./auto_save.js"
+import CsvViewer from "./csv_viewer.js"
+import ImageViewer from "./image_viewer.js"
+import MarkdownViewer from "./markdown_viewer.js"
 
 // Command palette keyboard shortcut
 const CommandPalette = {
@@ -84,4 +87,7 @@ export const Hooks = {
   AlignmentViewer,
   TreeViewer,
   AutoSave,
+  CsvViewer,
+  ImageViewer,
+  MarkdownViewer,
 }

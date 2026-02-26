@@ -85,5 +85,12 @@ config :stripity_stripe,
   api_key: "sk_test_placeholder",
   signing_secret: "whsec_placeholder"
 
+# DataCite DOI minting (disabled by default)
+config :cyanea, :datacite,
+  prefix: nil,
+  api_url: nil,
+  username: nil,
+  password: nil
+
 # Import environment specific config
 import_config "#{config_env()}.exs"

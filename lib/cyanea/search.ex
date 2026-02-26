@@ -21,8 +21,8 @@ defmodule Cyanea.Search do
 
     # Configure spaces index
     Meilisearch.Settings.update(@space_index, %{
-      searchableAttributes: ["name", "slug", "description", "tags", "owner_name"],
-      attributesForFaceting: ["visibility", "license", "tags"]
+      searchableAttributes: ["name", "slug", "description", "tags", "owner_name", "ontology_term_labels", "ontology_term_ids"],
+      attributesForFaceting: ["visibility", "license", "tags", "ontology_term_ids"]
     })
 
     # Configure users index
@@ -45,6 +45,10 @@ defmodule Cyanea.Search do
 
     owner_name = Cyanea.Spaces.owner_display(space)
 
+    ontology_terms = space.ontology_terms || []
+    ontology_term_labels = Enum.map(ontology_terms, &(&1["label"] || ""))
+    ontology_term_ids = Enum.map(ontology_terms, &(&1["id"] || ""))
+
     doc = %{
       id: space.id,
       name: space.name,
@@ -55,7 +59,9 @@ defmodule Cyanea.Search do
       tags: space.tags || [],
       star_count: space.star_count || 0,
       updated_at: space.updated_at && DateTime.to_unix(space.updated_at),
-      owner_name: owner_name
+      owner_name: owner_name,
+      ontology_term_labels: ontology_term_labels,
+      ontology_term_ids: ontology_term_ids
     }
 
     Meilisearch.Documents.add_or_replace(@space_index, [doc])

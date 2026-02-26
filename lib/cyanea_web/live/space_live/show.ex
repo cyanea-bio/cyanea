@@ -2,9 +2,11 @@ defmodule CyaneaWeb.SpaceLive.Show do
   use CyaneaWeb, :live_view
 
   import CyaneaWeb.ActivityEventComponent
+  import CyaneaWeb.CitationComponents
 
   alias Cyanea.Activity
   alias Cyanea.Blobs
+  alias Cyanea.Citations
   alias Cyanea.Datasets
   alias Cyanea.Federation
   alias Cyanea.Notebooks
@@ -45,6 +47,17 @@ defmodule CyaneaWeb.SpaceLive.Show do
         read_only = Spaces.read_only?(space)
         published = Federation.get_active_manifest(space.id) != nil
 
+        # Citations & FAIR
+        fair = Citations.fair_score(space)
+        contributors = Citations.contributors(space.id)
+        bibtex = Citations.cite(space, :bibtex)
+        ris = Citations.cite(space, :ris)
+        apa = Citations.cite(space, :apa)
+
+        # Lineage
+        ancestors = Spaces.lineage_ancestors(space)
+        descendants = Spaces.lineage_descendants(space.id)
+
         socket =
           socket
           |> assign(
@@ -61,7 +74,14 @@ defmodule CyaneaWeb.SpaceLive.Show do
             starred: starred || false,
             active_tab: "overview",
             forked_from: forked_from,
-            activity_events: []
+            activity_events: [],
+            fair_score: fair,
+            contributors: contributors,
+            bibtex: bibtex,
+            ris: ris,
+            apa: apa,
+            ancestors: ancestors,
+            descendants: descendants
           )
 
         socket =
@@ -347,6 +367,9 @@ defmodule CyaneaWeb.SpaceLive.Show do
                 </button>
               <% end %>
             <% end %>
+            <%!-- Cite button --%>
+            <.cite_button />
+
             <.link
               :if={@is_owner}
               navigate={~p"/#{@owner_name}/#{@space.slug}/settings"}
@@ -365,6 +388,10 @@ defmodule CyaneaWeb.SpaceLive.Show do
           </.metadata_row>
           <.metadata_row icon="hero-clock">
             Updated <%= CyaneaWeb.Formatters.format_date(@space.updated_at) %>
+          </.metadata_row>
+          <.fair_badge score={@fair_score} />
+          <.metadata_row :if={@space.doi} icon="hero-link">
+            DOI: <%= @space.doi %>
           </.metadata_row>
         </div>
 
@@ -416,6 +443,47 @@ defmodule CyaneaWeb.SpaceLive.Show do
                 <:item term="Datasets"><%= length(@datasets) %></:item>
                 <:item term="Files"><%= length(@files) %></:item>
               </.description_list>
+            </.card>
+
+            <.card>
+              <:header>
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">FAIR Score</h3>
+              </:header>
+              <.fair_breakdown score={@fair_score} />
+            </.card>
+          </div>
+
+          <%!-- Ontology terms --%>
+          <div :if={(@space.ontology_terms || []) != []} class="mt-6">
+            <.card>
+              <:header>
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Ontology Terms</h3>
+              </:header>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  :for={term <- @space.ontology_terms}
+                  class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary dark:bg-primary/20"
+                >
+                  <span class="font-mono text-[10px] opacity-70"><%= term["id"] %></span>
+                  <%= term["label"] %>
+                </span>
+              </div>
+            </.card>
+          </div>
+
+          <div class="mt-6 grid gap-6 md:grid-cols-2">
+            <%!-- Contributors --%>
+            <.card :if={@contributors != []}>
+              <.contributors_list contributors={@contributors} />
+            </.card>
+
+            <%!-- Lineage --%>
+            <.card :if={@ancestors != [] or @descendants != []}>
+              <.lineage_tree
+                ancestors={@ancestors}
+                descendants={@descendants}
+                current_name={"#{@owner_name}/#{@space.name}"}
+              />
             </.card>
           </div>
         </div>
@@ -564,7 +632,12 @@ defmodule CyaneaWeb.SpaceLive.Show do
                     <td class="px-6 py-3">
                       <div class="flex items-center gap-3">
                         <.icon name="hero-document" class="h-5 w-5 text-slate-400 shrink-0" />
-                        <span class="text-sm font-medium text-slate-900 dark:text-white"><%= file.name %></span>
+                        <.link
+                          navigate={~p"/#{@owner_name}/#{@space.slug}/files/#{file.id}"}
+                          class="text-sm font-medium text-primary hover:underline"
+                        >
+                          <%= file.name %>
+                        </.link>
                       </div>
                     </td>
                     <td class="px-6 py-3 text-right text-xs text-slate-500">
@@ -635,6 +708,9 @@ defmodule CyaneaWeb.SpaceLive.Show do
           </.card>
         </div>
       </div>
+
+      <%!-- Citation modal --%>
+      <.citation_modal bibtex={@bibtex} ris={@ris} apa={@apa} />
     </div>
     """
   end

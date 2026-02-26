@@ -352,6 +352,69 @@ defmodule Cyanea.Spaces do
     |> Repo.all()
   end
 
+  ## Lineage
+
+  @doc """
+  Walks the `forked_from_id` chain upward to find all ancestors.
+  Returns a list of maps with `:name`, `:slug`, `:owner_name`.
+  """
+  def lineage_ancestors(%Space{forked_from_id: nil}), do: []
+
+  def lineage_ancestors(%Space{forked_from_id: parent_id}) do
+    do_lineage_ancestors(parent_id, [], 10)
+  end
+
+  defp do_lineage_ancestors(nil, acc, _), do: acc
+  defp do_lineage_ancestors(_, acc, 0), do: acc
+
+  defp do_lineage_ancestors(space_id, acc, depth) do
+    case Repo.get(Space, space_id) do
+      nil ->
+        acc
+
+      space ->
+        entry = %{
+          id: space.id,
+          name: space.name,
+          slug: space.slug,
+          owner_name: owner_display(space)
+        }
+
+        do_lineage_ancestors(space.forked_from_id, acc ++ [entry], depth - 1)
+    end
+  end
+
+  @doc """
+  Finds direct descendants (forks) of a space, recursively up to 2 levels.
+  Returns a flat list of maps with `:name`, `:slug`, `:owner_name`.
+  """
+  def lineage_descendants(space_id, depth \\ 2) do
+    do_lineage_descendants(space_id, depth)
+  end
+
+  defp do_lineage_descendants(_, 0), do: []
+
+  defp do_lineage_descendants(space_id, depth) do
+    forks =
+      from(s in Space,
+        where: s.forked_from_id == ^space_id,
+        order_by: [desc: s.inserted_at],
+        limit: 10
+      )
+      |> Repo.all()
+
+    Enum.flat_map(forks, fn fork ->
+      entry = %{
+        id: fork.id,
+        name: fork.name,
+        slug: fork.slug,
+        owner_name: owner_display(fork)
+      }
+
+      [entry | do_lineage_descendants(fork.id, depth - 1)]
+    end)
+  end
+
   ## Fork helpers
 
   defp valid_fork_attrs(source, user, name, slug) do

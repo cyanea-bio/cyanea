@@ -20,7 +20,9 @@ defmodule CyaneaWeb.NotebookLive.Show do
              notebook: notebook,
              cells: Notebooks.get_cells(notebook),
              editing_cell_id: nil,
-             save_status: :saved
+             save_status: :saved,
+             cell_outputs: %{},
+             running_cells: MapSet.new()
            )}
         else
           {:ok,
@@ -116,9 +118,49 @@ defmodule CyaneaWeb.NotebookLive.Show do
     end
   end
 
+  def handle_event("run-cell", %{"cell-id" => cell_id}, socket) do
+    cell = Enum.find(socket.assigns.cells, &(&1["id"] == cell_id))
+
+    if cell && Notebooks.executable_cell?(cell) do
+      {:noreply,
+       socket
+       |> update(:running_cells, &MapSet.put(&1, cell_id))
+       |> push_event("execute-cell", %{cell_id: cell_id, source: cell["source"] || ""})}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("run-all", _params, socket) do
+    executable_cells =
+      socket.assigns.cells
+      |> Enum.filter(&Notebooks.executable_cell?/1)
+      |> Enum.map(&%{id: &1["id"], source: &1["source"] || ""})
+
+    running_ids = executable_cells |> Enum.map(& &1.id) |> MapSet.new()
+
+    {:noreply,
+     socket
+     |> assign(running_cells: running_ids)
+     |> push_event("execute-all", %{cells: executable_cells})}
+  end
+
+  def handle_event("clear-outputs", _params, socket) do
+    {:noreply, assign(socket, cell_outputs: %{}, running_cells: MapSet.new())}
+  end
+
+  def handle_event("cell-result", %{"cell-id" => cell_id, "output" => output}, socket) do
+    {:noreply,
+     socket
+     |> update(:cell_outputs, &Map.put(&1, cell_id, output))
+     |> update(:running_cells, &MapSet.delete(&1, cell_id))}
+  end
+
   def handle_event("auto-save", _params, socket) do
-    push_event(socket, "auto-save-done", %{})
-    {:noreply, assign(socket, save_status: :saved)}
+    {:noreply,
+     socket
+     |> push_event("auto-save-done", %{})
+     |> assign(save_status: :saved)}
   end
 
   @impl true
@@ -141,8 +183,25 @@ defmodule CyaneaWeb.NotebookLive.Show do
         </div>
       </div>
 
+      <%!-- Notebook toolbar --%>
+      <div :if={@is_owner && has_executable_cells?(@cells)} class="mt-4 flex items-center gap-2">
+        <button
+          phx-click="run-all"
+          class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 transition"
+        >
+          <.icon name="hero-play" class="h-4 w-4" /> Run All
+        </button>
+        <button
+          :if={@cell_outputs != %{}}
+          phx-click="clear-outputs"
+          class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+        >
+          <.icon name="hero-x-mark" class="h-4 w-4" /> Clear Outputs
+        </button>
+      </div>
+
       <%!-- Notebook content --%>
-      <div class="mt-6 space-y-4" id="notebook-cells" phx-hook="AutoSave">
+      <div class="mt-6 space-y-4" id="notebook-cells" phx-hook="NotebookExecutor">
         <%= if @cells == [] and @is_owner do %>
           <div class="flex justify-center gap-2">
             <button
@@ -168,6 +227,8 @@ defmodule CyaneaWeb.NotebookLive.Show do
               cell={cell}
               editing={@editing_cell_id == cell["id"]}
               owner_name={@owner_name}
+              cell_output={@cell_outputs[cell["id"]]}
+              running={MapSet.member?(@running_cells, cell["id"])}
             />
           <% else %>
             <.cell_viewer cell={cell} />
@@ -241,37 +302,106 @@ defmodule CyaneaWeb.NotebookLive.Show do
   end
 
   defp cell_editor(%{cell: %{"type" => "code"}} = assigns) do
+    assigns = assign(assigns, :is_cyanea, assigns.cell["language"] == "cyanea")
+
     ~H"""
     <.card class="group relative" padding="p-0">
-      <div class="absolute right-2 top-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <select
-          phx-change="update-cell-language"
-          phx-value-cell-id={@cell["id"]}
-          name="language"
-          class="rounded border border-slate-200 bg-white px-2 py-0.5 text-xs dark:border-slate-600 dark:bg-slate-800"
-        >
-          <option value="elixir" selected={@cell["language"] == "elixir"}>Elixir</option>
-          <option value="python" selected={@cell["language"] == "python"}>Python</option>
-          <option value="r" selected={@cell["language"] == "r"}>R</option>
-          <option value="bash" selected={@cell["language"] == "bash"}>Bash</option>
-          <option value="sql" selected={@cell["language"] == "sql"}>SQL</option>
-        </select>
-        <.cell_toolbar cell_id={@cell["id"]} />
+      <%!-- Code cell header --%>
+      <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-1.5 dark:border-slate-700 dark:bg-slate-900/50">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium text-slate-500">
+            <%= String.upcase(@cell["language"] || "code") %>
+          </span>
+          <span
+            :if={!@is_cyanea}
+            class="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400"
+          >
+            Server only
+          </span>
+        </div>
+        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <select
+            phx-change="update-cell-language"
+            phx-value-cell-id={@cell["id"]}
+            name="language"
+            class="rounded border border-slate-200 bg-white px-2 py-0.5 text-xs dark:border-slate-600 dark:bg-slate-800"
+          >
+            <option value="cyanea" selected={@cell["language"] == "cyanea"}>Cyanea</option>
+            <option value="elixir" selected={@cell["language"] == "elixir"}>Elixir</option>
+            <option value="python" selected={@cell["language"] == "python"}>Python</option>
+            <option value="r" selected={@cell["language"] == "r"}>R</option>
+            <option value="bash" selected={@cell["language"] == "bash"}>Bash</option>
+            <option value="sql" selected={@cell["language"] == "sql"}>SQL</option>
+          </select>
+          <%= if @is_cyanea do %>
+            <button
+              phx-click="run-cell"
+              phx-value-cell-id={@cell["id"]}
+              class="rounded p-1 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
+              title="Run cell (Shift+Enter)"
+            >
+              <.icon name="hero-play" class="h-3.5 w-3.5" />
+            </button>
+          <% end %>
+          <.cell_toolbar cell_id={@cell["id"]} />
+        </div>
       </div>
 
-      <div class="border-b border-slate-200 bg-slate-50 px-4 py-1.5 dark:border-slate-700 dark:bg-slate-900/50">
-        <span class="text-xs font-medium text-slate-500">
-          <%= String.upcase(@cell["language"] || "code") %>
-        </span>
+      <%!-- Editor area --%>
+      <%= if @is_cyanea do %>
+        <div
+          id={"code-editor-#{@cell["id"]}"}
+          phx-hook="CodeEditor"
+          phx-update="ignore"
+          data-cell-id={@cell["id"]}
+          data-language={@cell["language"]}
+          data-source={@cell["source"] || ""}
+          class="min-h-[60px]"
+        />
+      <% else %>
+        <textarea
+          phx-blur="update-cell"
+          phx-value-cell-id={@cell["id"]}
+          name="source"
+          rows={max(3, length(String.split(@cell["source"] || "", "\n")))}
+          class="w-full border-0 bg-slate-50 p-4 font-mono text-sm focus:ring-0 dark:bg-slate-900 dark:text-slate-200"
+          spellcheck="false"
+        ><%= @cell["source"] %></textarea>
+      <% end %>
+
+      <%!-- Running spinner --%>
+      <div
+        :if={@running}
+        class="flex items-center gap-2 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2"
+      >
+        <svg class="h-4 w-4 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        <span class="text-xs text-slate-500">Running...</span>
       </div>
-      <textarea
-        phx-blur="update-cell"
-        phx-value-cell-id={@cell["id"]}
-        name="source"
-        rows={max(3, length(String.split(@cell["source"] || "", "\n")))}
-        class="w-full border-0 bg-slate-50 p-4 font-mono text-sm focus:ring-0 dark:bg-slate-900 dark:text-slate-200"
-        spellcheck="false"
-      ><%= @cell["source"] %></textarea>
+
+      <%!-- Output area --%>
+      <div
+        :if={@cell_output}
+        class="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+      >
+        <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 px-4 py-1">
+          <span class="text-[10px] font-medium text-slate-400">OUTPUT</span>
+          <span
+            :if={@cell_output["timing_ms"]}
+            class="text-[10px] text-slate-400"
+          >
+            <%= @cell_output["timing_ms"] %>ms
+          </span>
+        </div>
+        <div
+          id={"output-#{@cell["id"]}"}
+          phx-hook="OutputRenderer"
+          data-output={Jason.encode!(@cell_output)}
+          class="p-4"
+        />
+      </div>
     </.card>
     """
   end
@@ -349,6 +479,10 @@ defmodule CyaneaWeb.NotebookLive.Show do
       <.icon name="hero-trash" class="h-3.5 w-3.5" />
     </button>
     """
+  end
+
+  defp has_executable_cells?(cells) do
+    Enum.any?(cells, &Notebooks.executable_cell?/1)
   end
 
   defp save_status_to_indicator(:saved), do: :online

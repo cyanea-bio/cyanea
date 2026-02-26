@@ -4,7 +4,7 @@ function bytesToString(bytes) {
   return String.fromCharCode(...bytes)
 }
 
-function renderAlignment(el, result) {
+export function renderAlignment(el, result) {
   const query = bytesToString(result.aligned_query)
   const target = bytesToString(result.aligned_target)
 

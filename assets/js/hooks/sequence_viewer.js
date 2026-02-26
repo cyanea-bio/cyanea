@@ -24,7 +24,7 @@ function detectType(seq) {
   return "Protein"
 }
 
-function renderSequence(el, sequence, label) {
+export function renderSequence(el, sequence, label) {
   const clean = sequence.replace(/^>.*\n?/, "").replace(/\s+/g, "")
   if (!clean) {
     el.innerHTML = `<div class="p-6 text-sm text-slate-500">No sequence data</div>`

@@ -31,7 +31,7 @@ defmodule Cyanea.NotebooksCellsTest do
 
       assert length(cells) == 1
       assert hd(cells)["type"] == "code"
-      assert hd(cells)["language"] == "elixir"
+      assert hd(cells)["language"] == "cyanea"
     end
 
     test "inserts cell at specific position", %{notebook: notebook} do
@@ -142,6 +142,26 @@ defmodule Cyanea.NotebooksCellsTest do
     test "returns cells from content", %{notebook: notebook} do
       {:ok, notebook} = Notebooks.add_cell(notebook, "markdown")
       assert length(Notebooks.get_cells(notebook)) == 1
+    end
+  end
+
+  describe "executable_cell?/1" do
+    test "returns true for cyanea code cells" do
+      cell = %{"type" => "code", "language" => "cyanea"}
+      assert Notebooks.executable_cell?(cell)
+    end
+
+    test "returns false for non-cyanea code cells" do
+      refute Notebooks.executable_cell?(%{"type" => "code", "language" => "elixir"})
+      refute Notebooks.executable_cell?(%{"type" => "code", "language" => "python"})
+    end
+
+    test "returns false for markdown cells" do
+      refute Notebooks.executable_cell?(%{"type" => "markdown"})
+    end
+
+    test "returns false for nil" do
+      refute Notebooks.executable_cell?(nil)
     end
   end
 

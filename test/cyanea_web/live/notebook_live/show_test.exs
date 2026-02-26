@@ -57,8 +57,8 @@ defmodule CyaneaWeb.NotebookLive.ShowTest do
       {:ok, view, _html} = live(conn, ~p"/#{user.username}/#{space.slug}/notebooks/test-notebook")
 
       html = render_click(view, "add-cell", %{"type" => "code"})
-      # Code cells default to elixir
-      assert html =~ "ELIXIR"
+      # Code cells default to cyanea
+      assert html =~ "CYANEA"
     end
 
     test "delete cell", %{conn: conn, user: user, space: space} do

@@ -4,6 +4,9 @@ import SequenceViewer from "./sequence_viewer.js"
 import AlignmentViewer from "./alignment_viewer.js"
 import TreeViewer from "./tree_viewer.js"
 import AutoSave from "./auto_save.js"
+import CodeEditor from "./code_editor.js"
+import NotebookExecutor from "./notebook_executor.js"
+import OutputRenderer from "./output_renderer.js"
 import CsvViewer from "./csv_viewer.js"
 import ImageViewer from "./image_viewer.js"
 import MarkdownViewer from "./markdown_viewer.js"
@@ -87,6 +90,9 @@ export const Hooks = {
   AlignmentViewer,
   TreeViewer,
   AutoSave,
+  CodeEditor,
+  NotebookExecutor,
+  OutputRenderer,
   CsvViewer,
   ImageViewer,
   MarkdownViewer,

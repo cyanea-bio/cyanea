@@ -88,7 +88,7 @@ defmodule Cyanea.Notebooks do
 
     new_cell =
       if type in ["code", :code] do
-        Map.put(new_cell, "language", "elixir")
+        Map.put(new_cell, "language", "cyanea")
       else
         new_cell
       end
@@ -170,6 +170,12 @@ defmodule Cyanea.Notebooks do
   end
 
   def get_cells(%Notebook{}), do: []
+
+  @doc """
+  Returns true if the cell is an executable cyanea code cell.
+  """
+  def executable_cell?(%{"type" => "code", "language" => "cyanea"}), do: true
+  def executable_cell?(_), do: false
 
   defp reindex_positions(cells) do
     cells

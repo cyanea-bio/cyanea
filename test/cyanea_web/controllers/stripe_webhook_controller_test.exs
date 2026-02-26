@@ -1,5 +1,5 @@
 defmodule CyaneaWeb.StripeWebhookControllerTest do
-  use CyaneaWeb.ConnCase, async: true
+  use CyaneaWeb.ConnCase, async: false
 
   describe "POST /webhooks/stripe" do
     test "returns 400 for invalid signature", %{conn: conn} do

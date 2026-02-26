@@ -5,7 +5,7 @@ defmodule Cyanea.Repo.Migrations.CreateRepositories do
     create table(:repositories, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
-      add :slug, :citext, null: false
+      add :slug, :string, null: false
       add :description, :text
       add :visibility, :string, null: false, default: "private"
       add :license, :string
@@ -26,7 +26,7 @@ defmodule Cyanea.Repo.Migrations.CreateRepositories do
     create index(:repositories, [:owner_id])
     create index(:repositories, [:organization_id])
     create index(:repositories, [:visibility])
-    create index(:repositories, [:tags], using: :gin)
+    create index(:repositories, [:tags])
 
     # Unique slug per owner
     create unique_index(:repositories, [:slug, :owner_id],
@@ -37,9 +37,5 @@ defmodule Cyanea.Repo.Migrations.CreateRepositories do
     create unique_index(:repositories, [:slug, :organization_id],
       where: "organization_id IS NOT NULL",
       name: :repositories_slug_organization_id_index)
-
-    # Constraint: must have owner OR organization, not both, not neither
-    create constraint(:repositories, :owner_xor_organization,
-      check: "(owner_id IS NOT NULL AND organization_id IS NULL) OR (owner_id IS NULL AND organization_id IS NOT NULL)")
   end
 end

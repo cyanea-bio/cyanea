@@ -1,5 +1,5 @@
 defmodule Cyanea.Notebooks.VersioningTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias Cyanea.Notebooks
 

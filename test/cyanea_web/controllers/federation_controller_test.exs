@@ -1,5 +1,5 @@
 defmodule CyaneaWeb.FederationControllerTest do
-  use CyaneaWeb.ConnCase, async: true
+  use CyaneaWeb.ConnCase, async: false
 
   import Cyanea.AccountsFixtures
   import Cyanea.SpacesFixtures

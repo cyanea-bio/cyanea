@@ -1,5 +1,5 @@
 defmodule Cyanea.Notebooks.VersionDiffTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Cyanea.Notebooks.VersionDiff
 

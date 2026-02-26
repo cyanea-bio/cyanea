@@ -617,8 +617,8 @@ defmodule Cyanea.Federation do
     from(m in Manifest,
       where:
         m.status == "published" and
-          (ilike(m.global_id, ^search) or
-             fragment("?->>'name' ILIKE ?", m.payload, ^search)),
+          (like(m.global_id, ^search) or
+             fragment("json_extract(?, '$.name') LIKE ?", m.payload, ^search)),
       order_by: [desc: m.inserted_at],
       limit: ^limit,
       preload: [:space, :node]

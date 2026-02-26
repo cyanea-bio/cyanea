@@ -2,13 +2,10 @@ defmodule Cyanea.Repo.Migrations.CreateUsers do
   use Ecto.Migration
 
   def change do
-    # Enable citext extension for case-insensitive text
-    execute "CREATE EXTENSION IF NOT EXISTS citext", "DROP EXTENSION IF EXISTS citext"
-
     create table(:users, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :email, :citext, null: false
-      add :username, :citext, null: false
+      add :email, :string, null: false
+      add :username, :string, null: false
       add :name, :string
       add :password_hash, :string
       add :orcid_id, :string

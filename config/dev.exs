@@ -2,14 +2,9 @@ import Config
 
 # Configure your database
 config :cyanea, Cyanea.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  port: 5433,
-  database: "cyanea_dev",
+  database: Path.expand("../cyanea_dev.db", __DIR__),
   stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  show_sensitive_data_on_connection_error: true
 
 # For development, we disable any cache and enable debugging
 config :cyanea, CyaneaWeb.Endpoint,

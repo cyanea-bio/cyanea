@@ -1,5 +1,5 @@
 defmodule Cyanea.BlobsTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias Cyanea.Blobs
   alias Cyanea.Blobs.Blob

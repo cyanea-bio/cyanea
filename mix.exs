@@ -43,7 +43,7 @@ defmodule Cyanea.MixProject do
 
       # Database
       {:ecto_sql, "~> 3.12"},
-      {:postgrex, ">= 0.0.0"},
+      {:ecto_sqlite3, "~> 0.17"},
 
       # Background Jobs
       {:oban, "~> 2.18"},

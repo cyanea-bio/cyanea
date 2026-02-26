@@ -12,7 +12,11 @@ kill_timeout = "5s"
   PHX_SERVER = "true"
   PHX_HOST = "app.cyanea.bio"
   PORT = "8080"
-  ECTO_IPV6 = "true"
+  DATABASE_PATH = "/data/cyanea.db"
+
+[mounts]
+  source = "cyanea_data"
+  destination = "/data"
 
 [http_service]
   internal_port = 8080

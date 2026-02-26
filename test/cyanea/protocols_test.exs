@@ -1,5 +1,5 @@
 defmodule Cyanea.ProtocolsTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias Cyanea.Protocols
   alias Cyanea.Protocols.Protocol

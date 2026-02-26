@@ -1,5 +1,5 @@
 defmodule CyaneaWeb.SettingsLiveTest do
-  use CyaneaWeb.ConnCase, async: true
+  use CyaneaWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
   import Cyanea.AccountsFixtures

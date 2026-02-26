@@ -1,5 +1,5 @@
 defmodule Cyanea.Accounts.UserNotifierTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias Cyanea.Accounts.UserNotifier
 

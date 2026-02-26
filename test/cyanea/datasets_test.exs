@@ -1,5 +1,5 @@
 defmodule Cyanea.DatasetsTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias Cyanea.Datasets
 

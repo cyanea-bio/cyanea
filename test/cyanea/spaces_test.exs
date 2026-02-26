@@ -1,5 +1,5 @@
 defmodule Cyanea.SpacesTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias Cyanea.Spaces
 

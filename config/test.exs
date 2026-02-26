@@ -2,13 +2,9 @@ import Config
 
 # Configure your database
 config :cyanea, Cyanea.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  port: 5433,
-  database: "cyanea_test#{System.get_env("MIX_TEST_PARTITION")}",
-  pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: System.schedulers_online() * 2
+  database: Path.expand("../cyanea_test#{System.get_env("MIX_TEST_PARTITION")}.db", __DIR__),
+  pool_size: 5,
+  pool: Ecto.Adapters.SQL.Sandbox
 
 # We don't run a server during test
 config :cyanea, CyaneaWeb.Endpoint,

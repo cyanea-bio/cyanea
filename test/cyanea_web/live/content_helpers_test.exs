@@ -1,5 +1,5 @@
 defmodule CyaneaWeb.ContentHelpersTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias CyaneaWeb.ContentHelpers
   alias Phoenix.LiveView.Socket

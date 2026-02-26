@@ -1,5 +1,5 @@
 defmodule CyaneaWeb.UserAuthTest do
-  use CyaneaWeb.ConnCase, async: true
+  use CyaneaWeb.ConnCase, async: false
 
   alias Cyanea.Accounts
   alias CyaneaWeb.UserAuth

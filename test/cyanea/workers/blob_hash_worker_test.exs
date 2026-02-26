@@ -1,5 +1,5 @@
 defmodule Cyanea.Workers.BlobHashWorkerTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
   use Oban.Testing, repo: Cyanea.Repo
 
   alias Cyanea.Blobs

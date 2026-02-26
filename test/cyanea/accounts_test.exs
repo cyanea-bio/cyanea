@@ -1,5 +1,5 @@
 defmodule Cyanea.AccountsTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias Cyanea.Accounts
   alias Cyanea.Accounts.{User, UserToken}

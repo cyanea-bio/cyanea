@@ -1,5 +1,5 @@
 defmodule Cyanea.FederationTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
 
   alias Cyanea.Federation
   alias Cyanea.Federation.Node

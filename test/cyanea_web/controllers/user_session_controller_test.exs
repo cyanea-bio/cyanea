@@ -1,5 +1,5 @@
 defmodule CyaneaWeb.UserSessionControllerTest do
-  use CyaneaWeb.ConnCase, async: true
+  use CyaneaWeb.ConnCase, async: false
 
   import Cyanea.AccountsFixtures
 

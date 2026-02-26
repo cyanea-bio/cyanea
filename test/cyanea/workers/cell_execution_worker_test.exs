@@ -1,5 +1,5 @@
 defmodule Cyanea.Workers.CellExecutionWorkerTest do
-  use Cyanea.DataCase, async: true
+  use Cyanea.DataCase, async: false
   use Oban.Testing, repo: Cyanea.Repo
 
   alias Cyanea.Workers.CellExecutionWorker

@@ -21,7 +21,7 @@ defmodule Cyanea.Repo.Migrations.SpacesFoundation do
     create table(:spaces, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
-      add :slug, :citext, null: false
+      add :slug, :string, null: false
       add :description, :text
       add :visibility, :string, null: false, default: "private"
       add :license, :string
@@ -51,7 +51,7 @@ defmodule Cyanea.Repo.Migrations.SpacesFoundation do
 
     create index(:spaces, [:owner_type, :owner_id])
     create index(:spaces, [:visibility])
-    create index(:spaces, [:tags], using: :gin)
+    create index(:spaces, [:tags])
     create index(:spaces, [:forked_from_id])
     create index(:spaces, [:global_id], unique: true, where: "global_id IS NOT NULL")
 
@@ -134,7 +134,7 @@ defmodule Cyanea.Repo.Migrations.SpacesFoundation do
     create table(:notebooks, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :title, :string, null: false
-      add :slug, :citext, null: false
+      add :slug, :string, null: false
       add :content, :map, default: %{}
       add :position, :integer, null: false, default: 0
 
@@ -154,7 +154,7 @@ defmodule Cyanea.Repo.Migrations.SpacesFoundation do
     create table(:protocols, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :title, :string, null: false
-      add :slug, :citext, null: false
+      add :slug, :string, null: false
       add :description, :text
       add :content, :map, default: %{}
       add :version, :string, null: false, default: "1.0.0"
@@ -176,7 +176,7 @@ defmodule Cyanea.Repo.Migrations.SpacesFoundation do
     create table(:datasets, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
-      add :slug, :citext, null: false
+      add :slug, :string, null: false
       add :description, :text
       add :storage_type, :string, null: false, default: "local"
       add :external_url, :string
@@ -192,7 +192,7 @@ defmodule Cyanea.Repo.Migrations.SpacesFoundation do
 
     create index(:datasets, [:space_id])
     create unique_index(:datasets, [:space_id, :slug])
-    create index(:datasets, [:tags], using: :gin)
+    create index(:datasets, [:tags])
 
     # =========================================================================
     # Dataset files — files belonging to a dataset
@@ -247,8 +247,7 @@ defmodule Cyanea.Repo.Migrations.SpacesFoundation do
       add :signer_key_id, :string
       add :payload, :map, null: false, default: %{}
 
-      add :space_id, references(:spaces, type: :binary_id, on_delete: :delete_all),
-        null: false
+      add :space_id, references(:spaces, type: :binary_id, on_delete: :delete_all)
 
       add :node_id, references(:federation_nodes, type: :binary_id, on_delete: :nilify_all)
 

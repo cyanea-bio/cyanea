@@ -1,5 +1,5 @@
 defmodule CyaneaWeb.AuthLive.ResendConfirmationTest do
-  use CyaneaWeb.ConnCase, async: true
+  use CyaneaWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
   import Cyanea.AccountsFixtures

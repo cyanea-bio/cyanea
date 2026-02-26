@@ -1,5 +1,5 @@
 defmodule Cyanea.MLTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Cyanea.ML
 

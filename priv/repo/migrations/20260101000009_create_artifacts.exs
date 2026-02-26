@@ -5,7 +5,7 @@ defmodule Cyanea.Repo.Migrations.CreateArtifacts do
     create table(:artifacts, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
-      add :slug, :citext, null: false
+      add :slug, :string, null: false
       add :description, :text
       add :type, :string, null: false
       add :version, :string, null: false, default: "1.0.0"
@@ -37,7 +37,7 @@ defmodule Cyanea.Repo.Migrations.CreateArtifacts do
     create index(:artifacts, [:visibility])
     create index(:artifacts, [:content_hash])
     create index(:artifacts, [:global_id], unique: true, where: "global_id IS NOT NULL")
-    create index(:artifacts, [:tags], using: :gin)
+    create index(:artifacts, [:tags])
 
     # Unique slug per repository
     create unique_index(:artifacts, [:slug, :repository_id],

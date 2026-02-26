@@ -47,6 +47,7 @@ config :phoenix, :json_library, Jason
 
 # Oban configuration
 config :cyanea, Oban,
+  engine: Oban.Engines.Lite,
   repo: Cyanea.Repo,
   queues: [
     default: 10,

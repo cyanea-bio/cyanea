@@ -22,10 +22,6 @@ defmodule Cyanea.Repo.Migrations.AddFederationFeatures do
       add :revision_number, :integer
     end
 
-    # Make space_id nullable for remote manifests (from other nodes)
-    execute "ALTER TABLE manifests ALTER COLUMN space_id DROP NOT NULL",
-            "ALTER TABLE manifests ALTER COLUMN space_id SET NOT NULL"
-
     # Create index for finding published spaces
     create index(:spaces, [:federation_policy], where: "federation_policy != 'none'")
 

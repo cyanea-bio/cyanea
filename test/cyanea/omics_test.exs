@@ -1,5 +1,5 @@
 defmodule Cyanea.OmicsTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Cyanea.Omics
 

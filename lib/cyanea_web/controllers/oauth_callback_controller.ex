@@ -113,6 +113,9 @@ defmodule CyaneaWeb.OAuthCallbackController do
 
           case Accounts.find_or_create_oauth_user(attrs) do
             {:ok, user} ->
+              # Auto-confirm ORCID users since ORCID is a trusted identity provider
+              user = ensure_confirmed(user)
+
               conn = if is_nil(email) do
                 put_flash(conn, :info, "Account created! Please set your ORCID email to public for notifications.")
               else
@@ -160,6 +163,17 @@ defmodule CyaneaWeb.OAuthCallbackController do
 
     "#{base}-#{last_four}"
   end
+
+  defp ensure_confirmed(%{confirmed_at: nil} = user) do
+    {:ok, user} =
+      user
+      |> Ecto.Changeset.change(confirmed_at: DateTime.truncate(DateTime.utc_now(), :second))
+      |> Cyanea.Repo.update()
+
+    user
+  end
+
+  defp ensure_confirmed(user), do: user
 
   defp store_link_intent(conn, _opts) do
     if conn.params["link"] == "true" do

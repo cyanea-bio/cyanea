@@ -30,7 +30,7 @@ defmodule CyaneaWeb.AuthLive.RegisterTest do
       assert result =~ "must have the @ sign"
     end
 
-    test "save creates user and redirects", %{conn: conn} do
+    test "save creates user, sends confirmation email, and redirects", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/auth/register")
 
       attrs = %{
@@ -44,8 +44,9 @@ defmodule CyaneaWeb.AuthLive.RegisterTest do
       |> element("form")
       |> render_submit(%{user: attrs})
 
-      {path, _flash} = assert_redirect(lv)
+      {path, flash} = assert_redirect(lv)
       assert path =~ "/auth/login"
+      assert flash["info"] =~ "check your email"
     end
   end
 end

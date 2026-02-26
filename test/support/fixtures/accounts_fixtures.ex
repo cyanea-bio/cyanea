@@ -22,6 +22,25 @@ defmodule Cyanea.AccountsFixtures do
       |> valid_user_attributes()
       |> Cyanea.Accounts.register_user()
 
+    # Confirm user by default so authenticated tests pass
+    confirm_user(user)
+  end
+
+  def unconfirmed_user_fixture(attrs \\ %{}) do
+    {:ok, user} =
+      attrs
+      |> valid_user_attributes()
+      |> Cyanea.Accounts.register_user()
+
+    user
+  end
+
+  defp confirm_user(user) do
+    {:ok, user} =
+      user
+      |> Ecto.Changeset.change(confirmed_at: DateTime.truncate(DateTime.utc_now(), :second))
+      |> Cyanea.Repo.update()
+
     user
   end
 end

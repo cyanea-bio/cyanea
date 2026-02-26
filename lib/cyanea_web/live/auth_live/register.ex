@@ -21,9 +21,14 @@ defmodule CyaneaWeb.AuthLive.Register do
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
+        Accounts.deliver_user_confirmation_instructions(
+          user,
+          &url(~p"/auth/confirm-email/#{&1}")
+        )
+
         {:noreply,
          socket
-         |> put_flash(:info, "Account created successfully!")
+         |> put_flash(:info, "Account created! Please check your email to confirm your account.")
          |> redirect(to: ~p"/auth/login?#{%{email: user.email}}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->

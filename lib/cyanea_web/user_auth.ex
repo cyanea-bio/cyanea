@@ -110,15 +110,25 @@ defmodule CyaneaWeb.UserAuth do
   def on_mount(:ensure_authenticated, _params, session, socket) do
     socket = mount_current_user(socket, session)
 
-    if socket.assigns.current_user do
-      {:cont, socket}
-    else
-      socket =
-        socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/auth/login")
+    cond do
+      is_nil(socket.assigns.current_user) ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+          |> Phoenix.LiveView.redirect(to: ~p"/auth/login")
 
-      {:halt, socket}
+        {:halt, socket}
+
+      !user_confirmed?(socket.assigns.current_user) ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(:error, "Please confirm your email address to continue.")
+          |> Phoenix.LiveView.redirect(to: ~p"/auth/resend-confirmation")
+
+        {:halt, socket}
+
+      true ->
+        {:cont, socket}
     end
   end
 
@@ -157,14 +167,22 @@ defmodule CyaneaWeb.UserAuth do
   Used for routes that require the user to be authenticated.
   """
   def require_authenticated_user(conn, _opts) do
-    if conn.assigns[:current_user] do
-      conn
-    else
-      conn
-      |> put_flash(:error, "You must log in to access this page.")
-      |> maybe_store_return_to()
-      |> redirect(to: ~p"/auth/login")
-      |> halt()
+    cond do
+      is_nil(conn.assigns[:current_user]) ->
+        conn
+        |> put_flash(:error, "You must log in to access this page.")
+        |> maybe_store_return_to()
+        |> redirect(to: ~p"/auth/login")
+        |> halt()
+
+      !user_confirmed?(conn.assigns[:current_user]) ->
+        conn
+        |> put_flash(:error, "Please confirm your email address to continue.")
+        |> redirect(to: ~p"/auth/resend-confirmation")
+        |> halt()
+
+      true ->
+        conn
     end
   end
 
@@ -179,6 +197,12 @@ defmodule CyaneaWeb.UserAuth do
   end
 
   defp maybe_store_return_to(conn), do: conn
+
+  # A user is considered confirmed if they have a confirmed_at timestamp,
+  # or if they signed up via ORCID (trusted identity provider).
+  defp user_confirmed?(%{confirmed_at: confirmed_at}) when not is_nil(confirmed_at), do: true
+  defp user_confirmed?(%{orcid_id: orcid_id}) when not is_nil(orcid_id), do: true
+  defp user_confirmed?(_user), do: false
 
   defp signed_in_path(_conn), do: ~p"/dashboard"
 end

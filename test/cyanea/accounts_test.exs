@@ -117,7 +117,7 @@ defmodule Cyanea.AccountsTest do
 
   describe "deliver_user_confirmation_instructions/2" do
     test "generates token and enqueues email", %{} do
-      user = user_fixture()
+      user = unconfirmed_user_fixture()
       url_fun = fn token -> "https://cyanea.dev/auth/confirm/#{token}" end
 
       assert {:ok, encoded_token} = Accounts.deliver_user_confirmation_instructions(user, url_fun)
@@ -138,7 +138,7 @@ defmodule Cyanea.AccountsTest do
 
   describe "confirm_user/1" do
     test "confirms user with valid token" do
-      user = user_fixture()
+      user = unconfirmed_user_fixture()
       token = Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
       hashed = :crypto.hash(:sha256, Base.url_decode64!(token, padding: false))
 

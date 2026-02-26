@@ -148,6 +148,10 @@ defmodule CyaneaWeb.Router do
       on_mount: [{CyaneaWeb.UserAuth, :redirect_if_user_is_authenticated}] do
       live "/login", AuthLive.Login, :new
       live "/register", AuthLive.Register, :new
+      live "/forgot-password", AuthLive.ForgotPassword, :new
+      live "/reset-password/:token", AuthLive.ResetPassword, :edit
+      live "/confirm-email/:token", AuthLive.ConfirmEmail, :show
+      live "/resend-confirmation", AuthLive.ResendConfirmation, :new
     end
   end
 

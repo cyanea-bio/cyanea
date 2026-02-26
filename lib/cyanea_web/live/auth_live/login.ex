@@ -49,6 +49,12 @@ defmodule CyaneaWeb.AuthLive.Login do
           <.input field={@form[:email]} type="email" label="Email" required autocomplete="email" />
           <.input field={@form[:password]} type="password" label="Password" required autocomplete="current-password" />
 
+          <div class="flex justify-end">
+            <.link navigate={~p"/auth/forgot-password"} class="text-sm font-medium text-primary hover:text-primary-500">
+              Forgot password?
+            </.link>
+          </div>
+
           <:actions>
             <.button type="submit" class="w-full">
               Sign in

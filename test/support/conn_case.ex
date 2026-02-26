@@ -60,6 +60,17 @@ defmodule CyaneaWeb.ConnCase do
   end
 
   @doc """
+  Extracts the token from a function that receives a URL builder.
+
+  Used to capture tokens sent via email for testing password reset
+  and email confirmation flows.
+  """
+  def extract_user_token(fun) do
+    {:ok, token} = fun.(&"#{&1}")
+    token
+  end
+
+  @doc """
   Creates an API key for the user and sets the Bearer Authorization header.
   Returns the conn with the API auth header set.
   """

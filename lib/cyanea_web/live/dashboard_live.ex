@@ -1,6 +1,9 @@
 defmodule CyaneaWeb.DashboardLive do
   use CyaneaWeb, :live_view
 
+  import CyaneaWeb.ActivityEventComponent
+
+  alias Cyanea.Activity
   alias Cyanea.Organizations
   alias Cyanea.Spaces
 
@@ -9,12 +12,14 @@ defmodule CyaneaWeb.DashboardLive do
     user = socket.assigns.current_user
     spaces = Spaces.list_user_spaces(user.id)
     organizations = Organizations.list_user_organizations(user.id)
+    activity_events = Activity.list_following_feed(user.id, limit: 20)
 
     {:ok,
      assign(socket,
        page_title: "Dashboard",
        spaces: spaces,
-       organizations: organizations
+       organizations: organizations,
+       activity_events: activity_events
      )}
   end
 
@@ -106,11 +111,14 @@ defmodule CyaneaWeb.DashboardLive do
           </div>
         </.card>
 
-        <%!-- Activity placeholder --%>
+        <%!-- Activity feed --%>
         <.card>
           <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Recent activity</h3>
-          <p class="mt-3 text-sm text-slate-500">
-            Activity feed coming soon.
+          <div :if={@activity_events != []} class="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+            <.activity_event :for={event <- @activity_events} event={event} />
+          </div>
+          <p :if={@activity_events == []} class="mt-3 text-sm text-slate-500">
+            No recent activity. Follow users to see their activity here.
           </p>
         </.card>
       </aside>

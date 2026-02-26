@@ -1,27 +1,34 @@
 defmodule CyaneaWeb.ExploreLive do
   use CyaneaWeb, :live_view
 
+  import CyaneaWeb.ActivityEventComponent
+
+  alias Cyanea.Activity
   alias Cyanea.Search
   alias Cyanea.Spaces
 
   @impl true
   def mount(_params, _session, socket) do
     spaces = Spaces.list_public_spaces()
+    trending = Spaces.list_trending_spaces(limit: 5)
 
     {:ok,
      assign(socket,
        page_title: "Explore",
        spaces: spaces,
+       trending: trending,
        search_query: "",
        active_tab: :spaces,
-       user_results: []
+       sort: "recently_updated",
+       user_results: [],
+       activity_events: []
      )}
   end
 
   @impl true
   def handle_event("search", %{"query" => query}, socket) do
     if query == "" do
-      spaces = Spaces.list_public_spaces()
+      spaces = load_spaces(socket.assigns.sort)
       {:noreply, assign(socket, spaces: spaces, search_query: "", user_results: [])}
     else
       {spaces, user_results} = perform_search(query)
@@ -30,8 +37,26 @@ defmodule CyaneaWeb.ExploreLive do
   end
 
   def handle_event("switch-tab", %{"tab" => tab}, socket) do
-    {:noreply, assign(socket, active_tab: String.to_existing_atom(tab))}
+    tab = String.to_existing_atom(tab)
+
+    socket =
+      if tab == :activity && socket.assigns.activity_events == [] do
+        events = Activity.list_global_feed(limit: 20)
+        assign(socket, activity_events: events)
+      else
+        socket
+      end
+
+    {:noreply, assign(socket, active_tab: tab)}
   end
+
+  def handle_event("sort", %{"sort" => sort}, socket) do
+    spaces = load_spaces(sort)
+    {:noreply, assign(socket, spaces: spaces, sort: sort)}
+  end
+
+  defp load_spaces("most_starred"), do: Spaces.list_trending_spaces(limit: 50)
+  defp load_spaces(_), do: Spaces.list_public_spaces()
 
   defp perform_search(query) do
     space_results =
@@ -88,15 +113,53 @@ defmodule CyaneaWeb.ExploreLive do
       </div>
 
       <%!-- Tabs --%>
-      <div :if={@search_query != ""} class="mt-6">
+      <div class="mt-6">
         <.tabs>
           <:tab active={@active_tab == :spaces} click="switch-tab" value="spaces" count={length(@spaces)}>
             Spaces
           </:tab>
-          <:tab active={@active_tab == :users} click="switch-tab" value="users" count={length(@user_results)}>
+          <:tab :if={@search_query != ""} active={@active_tab == :users} click="switch-tab" value="users" count={length(@user_results)}>
             Users
           </:tab>
+          <:tab active={@active_tab == :activity} click="switch-tab" value="activity">
+            Activity
+          </:tab>
         </.tabs>
+      </div>
+
+      <%!-- Sort options (only for spaces tab when not searching) --%>
+      <div :if={@active_tab == :spaces && @search_query == ""} class="mt-4 flex items-center gap-2">
+        <span class="text-sm text-slate-500">Sort:</span>
+        <button
+          :for={{label, value} <- [{"Recently updated", "recently_updated"}, {"Most starred", "most_starred"}]}
+          phx-click="sort"
+          phx-value-sort={value}
+          class={[
+            "rounded-lg px-3 py-1 text-sm",
+            if(@sort == value,
+              do: "bg-primary text-white",
+              else: "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300"
+            )
+          ]}
+        >
+          <%= label %>
+        </button>
+      </div>
+
+      <%!-- Trending section --%>
+      <div :if={@active_tab == :spaces && @search_query == "" && @trending != []} class="mt-6">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Trending</h3>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <.link
+            :for={space <- @trending}
+            navigate={space_path(space)}
+            class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+          >
+            <.icon name="hero-star" class="h-3.5 w-3.5 text-yellow-500" />
+            <span class="text-slate-500"><%= space_owner_name(space) %>/</span><%= space.name %>
+            <span class="text-xs text-slate-400"><%= space.star_count %></span>
+          </.link>
+        </div>
       </div>
 
       <%!-- Space results --%>
@@ -127,6 +190,9 @@ defmodule CyaneaWeb.ExploreLive do
                 <.metadata_row icon="hero-star">
                   <%= space.star_count %>
                 </.metadata_row>
+                <.metadata_row :if={space.fork_count > 0} icon="hero-arrow-path-rounded-square">
+                  <%= space.fork_count %>
+                </.metadata_row>
               </div>
             </div>
           </div>
@@ -155,6 +221,19 @@ defmodule CyaneaWeb.ExploreLive do
         </div>
 
         <.empty_state :if={@user_results == []} heading="No users found." />
+      </div>
+
+      <%!-- Activity tab --%>
+      <div :if={@active_tab == :activity} class="mt-8">
+        <.card>
+          <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Global activity</h3>
+          <div :if={@activity_events != []} class="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+            <.activity_event :for={event <- @activity_events} event={event} />
+          </div>
+          <p :if={@activity_events == []} class="mt-3 text-sm text-slate-500">
+            No activity yet.
+          </p>
+        </.card>
       </div>
     </div>
     """

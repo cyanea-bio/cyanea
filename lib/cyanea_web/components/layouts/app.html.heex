@@ -26,6 +26,10 @@
       </button>
 
       <%= if @current_user do %>
+        <a href={~p"/notifications"} class="relative text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+          <.icon name="hero-bell" class="h-5 w-5" />
+        </a>
+
         <a href={~p"/new"} class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700">
           New
         </a>

@@ -70,6 +70,12 @@ defmodule CyaneaWeb.Router do
       live "/:username/:slug/notebooks/new", NotebookLive.New, :new
       live "/:username/:slug/protocols/new", ProtocolLive.New, :new
       live "/:username/:slug/datasets/new", DatasetLive.New, :new
+
+      # Discussions (create requires auth)
+      live "/:username/:slug/discussions/new", DiscussionLive.New, :new
+
+      # Notifications
+      live "/notifications", NotificationLive.Index, :index
     end
   end
 
@@ -90,6 +96,10 @@ defmodule CyaneaWeb.Router do
       live "/explore", ExploreLive, :index
       live "/:username", UserLive.Show, :show
       live "/:username/:slug", SpaceLive.Show, :show
+
+      # Discussions (public, access checked in mount)
+      live "/:username/:slug/discussions", DiscussionLive.Index, :index
+      live "/:username/:slug/discussions/:discussion_id", DiscussionLive.Show, :show
 
       # Content detail pages (public, access checked in mount)
       live "/:username/:slug/notebooks/:notebook_slug", NotebookLive.Show, :show

@@ -1,9 +1,13 @@
 defmodule CyaneaWeb.SpaceLive.Show do
   use CyaneaWeb, :live_view
 
+  import CyaneaWeb.ActivityEventComponent
+
+  alias Cyanea.Activity
   alias Cyanea.Blobs
   alias Cyanea.Datasets
   alias Cyanea.Notebooks
+  alias Cyanea.Notifications
   alias Cyanea.Protocols
   alias Cyanea.Spaces
   alias Cyanea.Stars
@@ -34,6 +38,9 @@ defmodule CyaneaWeb.SpaceLive.Show do
         datasets = Datasets.list_space_datasets(space.id)
         starred = current_user && Stars.starred?(current_user.id, space.id)
 
+        # Load forked-from space info
+        forked_from = load_forked_from(space)
+
         socket =
           socket
           |> assign(
@@ -46,7 +53,9 @@ defmodule CyaneaWeb.SpaceLive.Show do
             protocols: protocols,
             datasets: datasets,
             starred: starred || false,
-            active_tab: "overview"
+            active_tab: "overview",
+            forked_from: forked_from,
+            activity_events: []
           )
 
         socket =
@@ -66,6 +75,14 @@ defmodule CyaneaWeb.SpaceLive.Show do
 
   @impl true
   def handle_event("switch-tab", %{"tab" => tab}, socket) do
+    socket =
+      if tab == "activity" && socket.assigns.activity_events == [] do
+        events = Activity.list_space_feed(socket.assigns.space.id, limit: 20)
+        assign(socket, activity_events: events)
+      else
+        socket
+      end
+
     {:noreply, assign(socket, active_tab: tab)}
   end
 
@@ -122,6 +139,13 @@ defmodule CyaneaWeb.SpaceLive.Show do
 
     case Stars.star_space(user.id, space.id) do
       {:ok, _star} ->
+        Activity.log(user, "starred_space", space,
+          space_id: space.id,
+          metadata: %{"name" => space.name, "slug" => space.slug}
+        )
+
+        Notifications.notify_space_owner(user, "starred", space, "space", space.id)
+
         space = Spaces.get_space!(space.id)
         {:noreply, assign(socket, starred: true, space: space)}
 
@@ -144,6 +168,33 @@ defmodule CyaneaWeb.SpaceLive.Show do
     end
   end
 
+  def handle_event("fork", _params, socket) do
+    user = socket.assigns.current_user
+    space = socket.assigns.space
+
+    case Spaces.fork_space(space, user) do
+      {:ok, forked_space} ->
+        Activity.log(user, "forked_space", forked_space,
+          space_id: forked_space.id,
+          metadata: %{
+            "name" => forked_space.name,
+            "slug" => forked_space.slug,
+            "original_id" => space.id
+          }
+        )
+
+        Notifications.notify_space_owner(user, "forked", space, "space", forked_space.id)
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Space forked successfully.")
+         |> redirect(to: ~p"/#{user.username}/#{forked_space.slug}")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to fork space.")}
+    end
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -156,6 +207,17 @@ defmodule CyaneaWeb.SpaceLive.Show do
         </.breadcrumb>
         <.visibility_badge visibility={@space.visibility} />
       </div>
+
+      <%!-- Forked from attribution --%>
+      <p :if={@forked_from} class="mt-2 text-sm text-slate-500">
+        Forked from
+        <.link
+          navigate={~p"/#{@forked_from.owner_name}/#{@forked_from.slug}"}
+          class="font-medium text-primary hover:underline"
+        >
+          <%= @forked_from.owner_name %>/<%= @forked_from.name %>
+        </.link>
+      </p>
 
       <%!-- Space Info Card --%>
       <.card class="mt-6">
@@ -185,10 +247,26 @@ defmodule CyaneaWeb.SpaceLive.Show do
                   <%= @space.star_count %>
                 </button>
               <% end %>
+
+              <%!-- Fork button --%>
+              <button
+                :if={!@is_owner}
+                phx-click="fork"
+                data-confirm="Fork this space? A copy will be created under your account."
+                class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+              >
+                <.icon name="hero-arrow-path-rounded-square" class="h-4 w-4" />
+                Fork
+                <span :if={@space.fork_count > 0} class="text-slate-400"><%= @space.fork_count %></span>
+              </button>
             <% else %>
               <span class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-700">
                 <.icon name="hero-star" class="h-4 w-4" />
                 <%= @space.star_count %>
+              </span>
+              <span :if={@space.fork_count > 0} class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-700">
+                <.icon name="hero-arrow-path-rounded-square" class="h-4 w-4" />
+                <%= @space.fork_count %>
               </span>
             <% end %>
             <.link
@@ -235,6 +313,12 @@ defmodule CyaneaWeb.SpaceLive.Show do
           </:tab>
           <:tab active={@active_tab == "files"} click="switch-tab" value="files" count={length(@files)}>
             Files
+          </:tab>
+          <:tab active={@active_tab == "discussions"} click="switch-tab" value="discussions" count={@space.discussion_count}>
+            Discussions
+          </:tab>
+          <:tab active={@active_tab == "activity"} click="switch-tab" value="activity">
+            Activity
           </:tab>
         </.tabs>
       </div>
@@ -438,6 +522,40 @@ defmodule CyaneaWeb.SpaceLive.Show do
             </div>
           </.card>
         </div>
+
+        <%!-- Discussions --%>
+        <div :if={@active_tab == "discussions"}>
+          <div class="flex justify-end">
+            <.link
+              navigate={~p"/#{@owner_name}/#{@space.slug}/discussions"}
+              class="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary/90"
+            >
+              View all discussions
+            </.link>
+          </div>
+          <p class="mt-4 text-sm text-slate-500">
+            This space has <%= @space.discussion_count %> discussion(s).
+            <.link
+              navigate={~p"/#{@owner_name}/#{@space.slug}/discussions"}
+              class="text-primary hover:underline"
+            >
+              Go to discussions
+            </.link>
+          </p>
+        </div>
+
+        <%!-- Activity --%>
+        <div :if={@active_tab == "activity"}>
+          <.card>
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Recent activity</h3>
+            <div :if={@activity_events != []} class="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+              <.activity_event :for={event <- @activity_events} event={event} />
+            </div>
+            <p :if={@activity_events == []} class="mt-3 text-sm text-slate-500">
+              No activity yet.
+            </p>
+          </.card>
+        </div>
       </div>
     </div>
     """
@@ -447,4 +565,20 @@ defmodule CyaneaWeb.SpaceLive.Show do
   defp upload_error_to_string(:too_many_files), do: "Too many files (max 5)."
   defp upload_error_to_string(:external_client_failure), do: "Upload failed."
   defp upload_error_to_string(err), do: "Upload error: #{inspect(err)}"
+
+  defp load_forked_from(%{forked_from_id: nil}), do: nil
+
+  defp load_forked_from(%{forked_from_id: id}) do
+    case Cyanea.Repo.get(Cyanea.Spaces.Space, id) do
+      nil ->
+        nil
+
+      space ->
+        %{
+          name: space.name,
+          slug: space.slug,
+          owner_name: Spaces.owner_display(space)
+        }
+    end
+  end
 end

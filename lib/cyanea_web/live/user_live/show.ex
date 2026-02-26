@@ -1,9 +1,14 @@
 defmodule CyaneaWeb.UserLive.Show do
   use CyaneaWeb, :live_view
 
+  import CyaneaWeb.ActivityEventComponent
+
   alias Cyanea.Accounts
+  alias Cyanea.Activity
+  alias Cyanea.Follows
   alias Cyanea.Organizations
   alias Cyanea.Spaces
+  alias Cyanea.Stars
 
   @impl true
   def mount(%{"username" => username}, _session, socket) do
@@ -35,7 +40,14 @@ defmodule CyaneaWeb.UserLive.Show do
                user: nil,
                spaces: spaces,
                members: members,
-               organizations: []
+               organizations: [],
+               active_tab: :spaces,
+               following: false,
+               follower_count: 0,
+               following_count: 0,
+               starred_spaces: [],
+               activity_events: [],
+               is_self: false
              )}
         end
 
@@ -52,6 +64,12 @@ defmodule CyaneaWeb.UserLive.Show do
 
         orgs = Organizations.list_user_organizations(user.id)
 
+        following =
+          current_user && !is_self && Follows.following?(current_user.id, "user", user.id)
+
+        follower_count = Follows.follower_count("user", user.id)
+        following_count = Follows.following_count(user.id)
+
         {:ok,
          assign(socket,
            page_title: user.name || user.username,
@@ -62,8 +80,69 @@ defmodule CyaneaWeb.UserLive.Show do
            spaces: spaces,
            organizations: orgs,
            members: [],
-           is_self: is_self
+           is_self: is_self,
+           active_tab: :spaces,
+           following: following || false,
+           follower_count: follower_count,
+           following_count: following_count,
+           starred_spaces: [],
+           activity_events: []
          )}
+    end
+  end
+
+  @impl true
+  def handle_event("switch-tab", %{"tab" => tab}, socket) do
+    tab = String.to_existing_atom(tab)
+
+    socket =
+      cond do
+        tab == :starred && socket.assigns.starred_spaces == [] && socket.assigns.user ->
+          stars = Stars.list_user_stars(socket.assigns.user.id)
+          assign(socket, starred_spaces: stars)
+
+        tab == :activity && socket.assigns.activity_events == [] && socket.assigns.user ->
+          events = Activity.list_user_feed(socket.assigns.user.id, limit: 20)
+          assign(socket, activity_events: events)
+
+        true ->
+          socket
+      end
+
+    {:noreply, assign(socket, active_tab: tab)}
+  end
+
+  def handle_event("follow", _params, socket) do
+    user = socket.assigns.current_user
+    target = socket.assigns.user
+
+    case Follows.follow(user.id, "user", target.id) do
+      {:ok, _} ->
+        {:noreply,
+         assign(socket,
+           following: true,
+           follower_count: socket.assigns.follower_count + 1
+         )}
+
+      {:error, _} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("unfollow", _params, socket) do
+    user = socket.assigns.current_user
+    target = socket.assigns.user
+
+    case Follows.unfollow(user.id, "user", target.id) do
+      {:ok, _} ->
+        {:noreply,
+         assign(socket,
+           following: false,
+           follower_count: max(socket.assigns.follower_count - 1, 0)
+         )}
+
+      {:error, _} ->
+        {:noreply, socket}
     end
   end
 
@@ -74,7 +153,15 @@ defmodule CyaneaWeb.UserLive.Show do
       <%!-- Sidebar --%>
       <aside>
         <%= if @profile_type == :user do %>
-          <.user_sidebar user={@user} organizations={@organizations} />
+          <.user_sidebar
+            user={@user}
+            organizations={@organizations}
+            current_user={@current_user}
+            is_self={@is_self}
+            following={@following}
+            follower_count={@follower_count}
+            following_count={@following_count}
+          />
         <% else %>
           <.org_sidebar org={@org} org_admin={@org_admin} members={@members} />
         <% end %>
@@ -82,8 +169,23 @@ defmodule CyaneaWeb.UserLive.Show do
 
       <%!-- Main Content --%>
       <div>
-        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Spaces</h2>
-        <div class="mt-4 space-y-3">
+        <%!-- Tabs --%>
+        <div class="mb-4">
+          <.tabs>
+            <:tab active={@active_tab == :spaces} click="switch-tab" value="spaces" count={length(@spaces)}>
+              Spaces
+            </:tab>
+            <:tab :if={@profile_type == :user} active={@active_tab == :starred} click="switch-tab" value="starred">
+              Starred
+            </:tab>
+            <:tab :if={@profile_type == :user} active={@active_tab == :activity} click="switch-tab" value="activity">
+              Activity
+            </:tab>
+          </.tabs>
+        </div>
+
+        <%!-- Spaces tab --%>
+        <div :if={@active_tab == :spaces} class="space-y-3">
           <div
             :for={space <- @spaces}
             class="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
@@ -112,6 +214,47 @@ defmodule CyaneaWeb.UserLive.Show do
 
           <.empty_state :if={@spaces == []} heading="No spaces yet." />
         </div>
+
+        <%!-- Starred tab --%>
+        <div :if={@active_tab == :starred} class="space-y-3">
+          <div
+            :for={star <- @starred_spaces}
+            class="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
+          >
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2">
+                <.link
+                  navigate={space_path(star.space)}
+                  class="font-semibold text-primary hover:underline"
+                >
+                  <%= star.space.name %>
+                </.link>
+                <.visibility_badge visibility={star.space.visibility} />
+              </div>
+              <.metadata_row icon="hero-star">
+                <%= star.space.star_count %>
+              </.metadata_row>
+            </div>
+            <p :if={star.space.description} class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              <%= star.space.description %>
+            </p>
+          </div>
+
+          <.empty_state :if={@starred_spaces == []} heading="No starred spaces." />
+        </div>
+
+        <%!-- Activity tab --%>
+        <div :if={@active_tab == :activity}>
+          <.card>
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Recent activity</h3>
+            <div :if={@activity_events != []} class="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+              <.activity_event :for={event <- @activity_events} event={event} />
+            </div>
+            <p :if={@activity_events == []} class="mt-3 text-sm text-slate-500">
+              No activity yet.
+            </p>
+          </.card>
+        </div>
       </div>
     </div>
     """
@@ -133,6 +276,32 @@ defmodule CyaneaWeb.UserLive.Show do
       <p :if={@user.bio} class="mt-3 text-sm text-slate-600 dark:text-slate-400">
         <%= @user.bio %>
       </p>
+
+      <%!-- Follow button --%>
+      <div :if={@current_user && !@is_self} class="mt-4">
+        <%= if @following do %>
+          <button
+            phx-click="unfollow"
+            class="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+          >
+            Following
+          </button>
+        <% else %>
+          <button
+            phx-click="follow"
+            class="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+          >
+            Follow
+          </button>
+        <% end %>
+      </div>
+
+      <%!-- Follower/following counts --%>
+      <div class="mt-4 flex items-center gap-4 text-sm text-slate-500">
+        <span><strong class="text-slate-900 dark:text-white"><%= @follower_count %></strong> followers</span>
+        <span><strong class="text-slate-900 dark:text-white"><%= @following_count %></strong> following</span>
+      </div>
+
       <div class="mt-4 space-y-2 text-sm text-slate-500">
         <.metadata_row :if={@user.affiliation} icon="hero-building-library">
           <%= @user.affiliation %>

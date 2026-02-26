@@ -7,7 +7,10 @@ defmodule Cyanea.Spaces do
   """
   import Ecto.Query
 
+  alias Cyanea.Datasets
+  alias Cyanea.Notebooks
   alias Cyanea.Organizations.Membership
+  alias Cyanea.Protocols
   alias Cyanea.Repo
   alias Cyanea.Spaces.Space
 
@@ -222,5 +225,150 @@ defmodule Cyanea.Spaces do
       nil -> "unknown"
       org -> org.slug
     end
+  end
+
+  ## Forking
+
+  @doc """
+  Deep-copies a space for a user: creates new space with forked_from_id,
+  copies notebooks, protocols, datasets (referencing same blobs), and space_files.
+  Atomically increments fork_count on the original space.
+  """
+  def fork_space(%Space{} = source, user, attrs \\ %{}) do
+    fork_slug = Map.get(attrs, :slug, source.slug <> "-fork")
+    fork_name = Map.get(attrs, :name, source.name <> " (fork)")
+
+    space_attrs =
+      valid_fork_attrs(source, user, fork_name, fork_slug)
+
+    multi =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:space, Space.changeset(%Space{}, space_attrs))
+      |> Ecto.Multi.update_all(:increment_forks, fn _changes ->
+        from(s in Space, where: s.id == ^source.id, update: [inc: [fork_count: 1]])
+      end, [])
+      |> Ecto.Multi.run(:copy_content, fn repo, %{space: forked_space} ->
+        copy_notebooks(repo, source.id, forked_space.id)
+        copy_protocols(repo, source.id, forked_space.id)
+        copy_datasets(repo, source.id, forked_space.id)
+        copy_space_files(repo, source.id, forked_space.id)
+        {:ok, forked_space}
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{space: forked_space}} ->
+        if forked_space.visibility == "public", do: Cyanea.Search.index_space(forked_space)
+        {:ok, forked_space}
+
+      {:error, :space, changeset, _} ->
+        {:error, changeset}
+
+      {:error, _, reason, _} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Lists spaces forked from a given space.
+  """
+  def list_forks(space_id) do
+    from(s in Space,
+      where: s.forked_from_id == ^space_id,
+      order_by: [desc: s.inserted_at]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Lists trending public spaces, sorted by star_count descending.
+  """
+  def list_trending_spaces(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 10)
+
+    from(s in Space,
+      where: s.visibility == "public" and s.star_count > 0,
+      order_by: [desc: s.star_count],
+      limit: ^limit
+    )
+    |> Repo.all()
+  end
+
+  ## Fork helpers
+
+  defp valid_fork_attrs(source, user, name, slug) do
+    %{
+      name: name,
+      slug: slug,
+      description: source.description,
+      visibility: "public",
+      license: source.license,
+      owner_type: "user",
+      owner_id: user.id,
+      forked_from_id: source.id,
+      tags: source.tags || [],
+      ontology_terms: source.ontology_terms || []
+    }
+  end
+
+  defp copy_notebooks(_repo, source_space_id, target_space_id) do
+    Notebooks.list_space_notebooks(source_space_id)
+    |> Enum.each(fn nb ->
+      Notebooks.create_notebook(%{
+        space_id: target_space_id,
+        title: nb.title,
+        slug: nb.slug,
+        content: nb.content,
+        position: nb.position
+      })
+    end)
+  end
+
+  defp copy_protocols(_repo, source_space_id, target_space_id) do
+    Protocols.list_space_protocols(source_space_id)
+    |> Enum.each(fn p ->
+      Protocols.create_protocol(%{
+        space_id: target_space_id,
+        title: p.title,
+        slug: p.slug,
+        description: p.description,
+        content: p.content,
+        version: "1.0.0",
+        position: p.position
+      })
+    end)
+  end
+
+  defp copy_datasets(_repo, source_space_id, target_space_id) do
+    Datasets.list_space_datasets(source_space_id)
+    |> Enum.each(fn ds ->
+      case Datasets.create_dataset(%{
+             space_id: target_space_id,
+             name: ds.name,
+             slug: ds.slug,
+             description: ds.description,
+             storage_type: ds.storage_type,
+             external_url: ds.external_url,
+             metadata: ds.metadata,
+             tags: ds.tags,
+             position: ds.position
+           }) do
+        {:ok, new_ds} ->
+          # Copy dataset files (reference same blobs)
+          Datasets.list_dataset_files(ds.id)
+          |> Enum.each(fn df ->
+            Datasets.attach_file(new_ds, df.blob_id, df.path, size: df.size)
+          end)
+
+        _ ->
+          :ok
+      end
+    end)
+  end
+
+  defp copy_space_files(_repo, source_space_id, target_space_id) do
+    Cyanea.Blobs.list_space_files(source_space_id)
+    |> Enum.each(fn sf ->
+      Cyanea.Blobs.attach_file_to_space(target_space_id, sf.blob_id, sf.path || sf.name, sf.name)
+    end)
   end
 end

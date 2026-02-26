@@ -31,6 +31,7 @@ defmodule Cyanea.Spaces.Space do
     # Counters
     field :fork_count, :integer, default: 0
     field :star_count, :integer, default: 0
+    field :discussion_count, :integer, default: 0
 
     # Tagging and ontology
     field :tags, {:array, :string}, default: []
@@ -52,6 +53,7 @@ defmodule Cyanea.Spaces.Space do
     has_many :space_files, Cyanea.Blobs.SpaceFile
     has_many :revisions, Cyanea.Revisions.Revision
     has_many :stars, Cyanea.Stars.Star
+    has_many :discussions, Cyanea.Discussions.Discussion
 
     timestamps(type: :utc_datetime)
   end

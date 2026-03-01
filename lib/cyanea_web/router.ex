@@ -72,6 +72,11 @@ defmodule CyaneaWeb.Router do
     get "/orgs/:slug/members", OrganizationController, :members
 
     get "/search", SearchController, :search
+
+    # Learn — public endpoints
+    get "/learn/tracks", LearnController, :list_tracks
+    get "/learn/tracks/:slug", LearnController, :show_track
+    get "/learn/paths/:id", LearnController, :show_path
   end
 
   # REST API v1 — authenticated endpoints (writes + management)
@@ -110,6 +115,12 @@ defmodule CyaneaWeb.Router do
     # Dataset file management
     post "/spaces/:space_id/datasets/:dataset_id/files", DatasetController, :upload_file
     delete "/spaces/:space_id/datasets/:dataset_id/files/:file_id", DatasetController, :delete_file
+
+    # Learn — authenticated endpoints
+    post "/learn/units/:space_id/fork", LearnController, :fork_unit
+    get "/learn/progress", LearnController, :my_progress
+    get "/learn/progress/completed", LearnController, :completed_slugs
+    patch "/learn/progress/:id/checkpoint", LearnController, :complete_checkpoint
 
     # Webhooks
     get "/webhooks", WebhookController, :index

@@ -132,6 +132,72 @@ defmodule CyaneaWeb.Api.V1.ApiHelpers do
     }
   end
 
+  def serialize_track(track) do
+    base = %{
+      id: track.id,
+      title: track.title,
+      slug: track.slug,
+      description: track.description,
+      icon: track.icon,
+      position: track.position
+    }
+
+    if Ecto.assoc_loaded?(track.paths) do
+      Map.put(base, :paths, Enum.map(track.paths, &serialize_path/1))
+    else
+      base
+    end
+  end
+
+  def serialize_path(path) do
+    base = %{
+      id: path.id,
+      title: path.title,
+      slug: path.slug,
+      description: path.description,
+      position: path.position
+    }
+
+    if Ecto.assoc_loaded?(path.path_units) do
+      base
+      |> Map.put(:units, Enum.map(path.path_units, &serialize_path_unit/1))
+      |> Map.put(:unit_count, length(path.path_units))
+    else
+      base
+    end
+  end
+
+  def serialize_path_unit(path_unit) do
+    base = %{
+      id: path_unit.id,
+      position: path_unit.position,
+      estimated_minutes: path_unit.estimated_minutes
+    }
+
+    if Ecto.assoc_loaded?(path_unit.space) && path_unit.space do
+      Map.put(base, :space, %{
+        id: path_unit.space.id,
+        name: path_unit.space.name,
+        slug: path_unit.space.slug
+      })
+    else
+      base
+    end
+  end
+
+  def serialize_progress(progress) do
+    %{
+      id: progress.id,
+      status: progress.status,
+      checkpoints_total: progress.checkpoints_total,
+      checkpoints_passed: progress.checkpoints_passed,
+      space_id: progress.space_id,
+      fork_space_id: progress.fork_space_id,
+      started_at: format_datetime(progress.started_at),
+      completed_at: format_datetime(progress.completed_at)
+    }
+  end
+
   @doc """
   Applies offset-based pagination to a list.
   """

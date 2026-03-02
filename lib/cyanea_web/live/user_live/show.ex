@@ -6,6 +6,7 @@ defmodule CyaneaWeb.UserLive.Show do
   alias Cyanea.Accounts
   alias Cyanea.Activity
   alias Cyanea.Follows
+  alias Cyanea.Learn
   alias Cyanea.Organizations
   alias Cyanea.Spaces
   alias Cyanea.Stars
@@ -47,6 +48,7 @@ defmodule CyaneaWeb.UserLive.Show do
                following_count: 0,
                starred_spaces: [],
                activity_events: [],
+               learning_progress: [],
                is_self: false
              )}
         end
@@ -86,7 +88,8 @@ defmodule CyaneaWeb.UserLive.Show do
            follower_count: follower_count,
            following_count: following_count,
            starred_spaces: [],
-           activity_events: []
+           activity_events: [],
+           learning_progress: []
          )}
     end
   end
@@ -104,6 +107,10 @@ defmodule CyaneaWeb.UserLive.Show do
         tab == :activity && socket.assigns.activity_events == [] && socket.assigns.user ->
           events = Activity.list_user_feed(socket.assigns.user.id, limit: 20)
           assign(socket, activity_events: events)
+
+        tab == :learning && socket.assigns.learning_progress == [] && socket.assigns.user ->
+          progress = Learn.list_user_progress_with_spaces(socket.assigns.user.id)
+          assign(socket, learning_progress: progress)
 
         true ->
           socket
@@ -178,6 +185,9 @@ defmodule CyaneaWeb.UserLive.Show do
             <:tab :if={@profile_type == :user} active={@active_tab == :starred} click="switch-tab" value="starred">
               Starred
             </:tab>
+            <:tab :if={@profile_type == :user} active={@active_tab == :learning} click="switch-tab" value="learning">
+              Learning
+            </:tab>
             <:tab :if={@profile_type == :user} active={@active_tab == :activity} click="switch-tab" value="activity">
               Activity
             </:tab>
@@ -241,6 +251,59 @@ defmodule CyaneaWeb.UserLive.Show do
           </div>
 
           <.empty_state :if={@starred_spaces == []} heading="No starred spaces." />
+        </div>
+
+        <%!-- Learning tab --%>
+        <div :if={@active_tab == :learning} class="space-y-3">
+          <div
+            :for={progress <- @learning_progress}
+            :if={progress.space}
+            class="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
+          >
+            <div class="flex items-start justify-between">
+              <div>
+                <.link
+                  navigate={learn_space_path(progress.space)}
+                  class="font-semibold text-primary hover:underline"
+                >
+                  <%= progress.space.name %>
+                </.link>
+                <p :if={progress.space.description} class="mt-0.5 text-sm text-slate-500">
+                  <%= progress.space.description %>
+                </p>
+              </div>
+              <.learning_status_badge status={progress.status} />
+            </div>
+            <div :if={progress.checkpoints_total > 0} class="mt-3">
+              <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                <span><%= progress.checkpoints_passed %>/<%= progress.checkpoints_total %> checkpoints</span>
+                <span><%= checkpoint_pct(progress) %>%</span>
+              </div>
+              <div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-700">
+                <div
+                  class="h-1.5 rounded-full bg-primary"
+                  style={"width: #{checkpoint_pct(progress)}%"}
+                />
+              </div>
+            </div>
+            <div class="mt-2 text-xs text-slate-400">
+              <span :if={progress.completed_at}>
+                Completed <%= Calendar.strftime(progress.completed_at, "%b %d, %Y") %>
+              </span>
+              <span :if={!progress.completed_at && progress.started_at}>
+                Started <%= Calendar.strftime(progress.started_at, "%b %d, %Y") %>
+              </span>
+            </div>
+          </div>
+
+          <.empty_state :if={@learning_progress == []} heading="No learning progress yet.">
+            <:subtitle>
+              <.link navigate={~p"/learn"} class="text-primary hover:underline">
+                Browse learning tracks
+              </.link>
+              to get started.
+            </:subtitle>
+          </.empty_state>
         </div>
 
         <%!-- Activity tab --%>
@@ -379,4 +442,40 @@ defmodule CyaneaWeb.UserLive.Show do
     owner = Cyanea.Spaces.owner_display(space)
     ~p"/#{owner}/#{space.slug}"
   end
+
+  defp learn_space_path(space) do
+    owner = Cyanea.Spaces.owner_display(space)
+    ~p"/#{owner}/#{space.slug}"
+  end
+
+  defp learning_status_badge(%{status: "completed"} = assigns) do
+    ~H"""
+    <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+      Completed
+    </span>
+    """
+  end
+
+  defp learning_status_badge(%{status: "in_progress"} = assigns) do
+    ~H"""
+    <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+      In Progress
+    </span>
+    """
+  end
+
+  defp learning_status_badge(assigns) do
+    ~H"""
+    <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-400">
+      Not Started
+    </span>
+    """
+  end
+
+  defp checkpoint_pct(%{checkpoints_passed: passed, checkpoints_total: total})
+       when total > 0 do
+    round(passed / total * 100)
+  end
+
+  defp checkpoint_pct(_), do: 0
 end

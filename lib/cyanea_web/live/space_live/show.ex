@@ -12,6 +12,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
   alias Cyanea.Notebooks
   alias Cyanea.Notifications
   alias Cyanea.Protocols
+  alias Cyanea.Learn
   alias Cyanea.Spaces
   alias Cyanea.Stars
 
@@ -83,6 +84,21 @@ defmodule CyaneaWeb.SpaceLive.Show do
             ancestors: ancestors,
             descendants: descendants
           )
+
+        # Learn-specific state
+        is_learn = space.space_type == "learn"
+
+        learn_progress =
+          if is_learn && current_user do
+            case Learn.get_or_create_progress(current_user.id, space.id) do
+              {:ok, progress} -> progress
+              _ -> nil
+            end
+          else
+            nil
+          end
+
+        socket = assign(socket, is_learn: is_learn, learn_progress: learn_progress)
 
         socket =
           if is_owner do
@@ -253,6 +269,33 @@ defmodule CyaneaWeb.SpaceLive.Show do
     end
   end
 
+  def handle_event("fork-learn", _params, socket) do
+    user = socket.assigns.current_user
+    space = socket.assigns.space
+
+    case Learn.fork_learn_unit(user, space) do
+      {:ok, %{fork: forked_space, progress: progress}} ->
+        Activity.log(user, "forked_space", forked_space,
+          space_id: forked_space.id,
+          metadata: %{
+            "name" => forked_space.name,
+            "slug" => forked_space.slug,
+            "original_id" => space.id,
+            "learn" => true
+          }
+        )
+
+        {:noreply,
+         socket
+         |> assign(learn_progress: progress)
+         |> put_flash(:info, "Learning unit forked! Open your copy to start learning.")
+         |> redirect(to: ~p"/#{user.username}/#{forked_space.slug}")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to fork learning unit.")}
+    end
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -282,6 +325,30 @@ defmodule CyaneaWeb.SpaceLive.Show do
             Upgrade to Pro
           </.link>
         </p>
+      </div>
+
+      <%!-- Learn unit banner --%>
+      <div
+        :if={@is_learn && @current_user && !@is_owner}
+        class="mt-4 flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-900/20"
+      >
+        <div class="flex items-center gap-3">
+          <.icon name="hero-academic-cap" class="h-5 w-5 text-blue-500 shrink-0" />
+          <p class="text-sm text-blue-800 dark:text-blue-200">
+            <%= if @learn_progress && @learn_progress.fork_space_id do %>
+              You're learning this unit. Your progress is tracked.
+            <% else %>
+              This is a learning unit. Fork it to your workspace to start learning with exercises.
+            <% end %>
+          </p>
+        </div>
+        <button
+          :if={is_nil(@learn_progress) || is_nil(@learn_progress.fork_space_id)}
+          phx-click="fork-learn"
+          class="flex-shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          Start Learning
+        </button>
       </div>
 
       <%!-- Forked from attribution --%>

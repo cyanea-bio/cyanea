@@ -19,21 +19,6 @@ topbar.config({barColors: {0: "#06B6D4"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
-// Copy-to-clipboard for press kit and other pages
-window.addEventListener("phx:copy", (event) => {
-  const text = event.detail.text
-  if (text) {
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = event.target
-      if (btn) {
-        const orig = btn.innerHTML
-        btn.textContent = "Copied!"
-        setTimeout(() => { btn.innerHTML = orig }, 1500)
-      }
-    })
-  }
-})
-
 // connect if there are any LiveViews on the page
 liveSocket.connect()
 

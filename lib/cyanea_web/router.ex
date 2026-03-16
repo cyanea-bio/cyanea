@@ -214,8 +214,6 @@ defmodule CyaneaWeb.Router do
       on_mount: [{CyaneaWeb.UserAuth, :mount_current_user}] do
       live "/", HomeLive, :index
       live "/explore", ExploreLive, :index
-      live "/press", PressLive, :index
-      live "/team", TeamLive, :index
       live "/learn", LearnLive.Index, :index
       live "/learn/:track_slug/:path_slug", LearnLive.Path, :show
       live "/:username", UserLive.Show, :show

@@ -25,7 +25,7 @@ Cyanea is split into multiple repositories:
 | **[cyanea](https://github.com/cyanea-bio/cyanea)** | Phoenix web app — LiveView UI, API controllers, NIF bindings (this repo) |
 | **[cyanea-core](https://github.com/cyanea-bio/cyanea-core)** | Shared Elixir library — schemas, contexts, workers |
 | **[cyanea-hub](https://github.com/cyanea-bio/cyanea-hub)** | Private hub at app.cyanea.bio (also depends on cyanea-core) |
-| **[labs](https://github.com/cyanea-bio/labs)** | Rust bioinformatics ecosystem (13 crates) |
+| **[labs](https://github.com/cyanea-bio/labs)** | Rust bioinformatics ecosystem (18 crates) |
 
 Domain logic (Ecto schemas, context modules, Oban workers) lives in `cyanea-core` and is shared between the open-source node and the hub.
 

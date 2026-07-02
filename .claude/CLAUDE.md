@@ -314,10 +314,15 @@ cyanea-labs/
 ├── cyanea-chem/           # Chemistry/small molecules
 ├── cyanea-struct/         # Protein/nucleic acid structures
 ├── cyanea-phylo/          # Phylogenetics and trees
+├── cyanea-meta/           # Metagenomics (taxonomy, diversity, binning)
+├── cyanea-epi/            # Epigenomics (peaks, motifs, chromatin states)
+├── cyanea-proteomics/     # Mass spectrometry proteomics
+├── cyanea-network/        # Network and pathway biology
 ├── cyanea-io/             # File format parsers (unified)
 ├── cyanea-gpu/            # GPU compute abstraction (CUDA/Metal)
 ├── cyanea-wasm/           # WASM bindings and browser runtime
-└── cyanea-py/             # Python bindings (PyO3)
+├── cyanea-py/             # Python bindings (PyO3)
+└── cyanea-datasets/       # Sample datasets + protocol templates
 ```
 
 ### Core Libraries
@@ -415,7 +420,7 @@ Browser-ready bioinformatics:
 
 | Operation | Target | Comparison |
 |-----------|--------|------------|
-| FASTQ parsing | 2 GB/s | 10x faster than BioPython |
+| FASTQ parsing | 2+ GB/s | ~6x BioPython, results concordant (validated) |
 | Smith-Waterman (CPU) | 10 GCUPS | Competitive with SIMD libs |
 | Smith-Waterman (GPU) | 1 TCUPS | Batch alignment on RTX 4090 |
 | k-mer counting | 500 M/s | Competitive with KMC |
@@ -653,7 +658,7 @@ The project is split across **four separate git repositories** under the `cyanea
 ```
 cyanea-bio/                            # Parent directory (NOT a git repo)
 ├── labs/                              # Git repo: github.com/cyanea-bio/labs
-│   ├── Cargo.toml                     #   Rust Cargo workspace (13 crates)
+│   ├── Cargo.toml                     #   Rust Cargo workspace (18 crates)
 │   ├── cyanea-core/                   #   Shared primitives, traits, errors
 │   ├── cyanea-seq/                    #   Sequence I/O and manipulation
 │   ├── cyanea-align/                  #   Sequence alignment (CPU + GPU)
@@ -688,24 +693,29 @@ cyanea-bio/                            # Parent directory (NOT a git repo)
 
 ### Labs Structure (Rust)
 
-All 13 crates are **fully implemented** with 659+ tests passing. Each crate has a `docs/STATUS.md` with complete API documentation.
+All 18 crates are **fully implemented** with 3,700+ tests passing. Each crate has a `docs/STATUS.md` with complete API documentation.
 
 ```
 labs/                                  # github.com/cyanea-io/labs
-├── Cargo.toml                         # Workspace manifest (13 members)
+├── Cargo.toml                         # Workspace manifest (18 crates)
 ├── cyanea-core/                       # Shared primitives: traits, errors (thiserror 2.x), SHA-256, zstd, mmap
 ├── cyanea-seq/                        # DNA/RNA/protein sequence types, FASTA/FASTQ parsing, k-mers, quality scores
-├── cyanea-io/                         # File format parsers: CSV, VCF, BED, GFF3 (feature-gated)
+├── cyanea-io/                         # File format parsers: CSV, VCF, BAM/SAM, BED, GFF3, Parquet, and more (feature-gated)
 ├── cyanea-align/                      # Pairwise alignment (NW, SW, semi-global), affine gaps, MSA, banded, GPU dispatch
-├── cyanea-omics/                      # Genomic coords, intervals, expression matrices, variants, AnnData container
+├── cyanea-omics/                      # Genomic coords, intervals, expression matrices, variants, single-cell, spatial, clinical
 ├── cyanea-stats/                      # Descriptive stats, correlation, t-tests, distributions, multiple testing, PCA
-├── cyanea-ml/                         # Clustering (k-means/DBSCAN/hierarchical), distances, embeddings, KNN, PCA, t-SNE
+├── cyanea-ml/                         # Clustering (k-means/DBSCAN/hierarchical), distances, embeddings, KNN, PCA, t-SNE, UMAP
 ├── cyanea-chem/                       # SMILES/SDF parsing, Morgan fingerprints, molecular properties, substructure search
 ├── cyanea-struct/                     # PDB parsing, geometry, simplified DSSP, Kabsch superposition, contact maps
 ├── cyanea-phylo/                      # Newick/NEXUS I/O, distance models, UPGMA/NJ, Fitch/Sankoff reconstruction
-├── cyanea-gpu/                        # Backend trait (CPU/CUDA/Metal), buffers, reductions, matrix multiply, distances
+├── cyanea-meta/                       # Metagenomics: k-mer LCA taxonomy, diversity, compositional analysis, binning, assembly QC
+├── cyanea-epi/                        # Epigenomics: MACS2-style peaks, motif discovery, chromatin states, differential binding
+├── cyanea-proteomics/                 # Mass spec: MGF/mzML, digestion, PSM scoring, protein inference, TMT/LFQ, target-decoy FDR
+├── cyanea-network/                    # Network/pathway biology: centrality, community detection, PPI, GRN inference
+├── cyanea-gpu/                        # Backend trait (CPU/CUDA/Metal/WebGPU), buffers, reductions, matrix multiply, distances
 ├── cyanea-wasm/                       # WASM bindings (JSON-based API), wasm-bindgen behind feature flag
-└── cyanea-py/                         # Python bindings via PyO3 (seq, align, stats, core, ml submodules)
+├── cyanea-py/                         # Python bindings via PyO3 (seq, align, stats, core, ml, and more submodules)
+└── cyanea-datasets/                   # Bundled sample datasets + structured protocol templates
 ```
 
 ### Platform Structure (Elixir/Phoenix)
@@ -1059,7 +1069,7 @@ These are areas where Claude Code should propose options, not assume:
 | **cyanea-core** | `github.com/cyanea-bio/cyanea-core` | Shared Elixir library (schemas, contexts, workers) |
 | **cyanea** | `github.com/cyanea-bio/cyanea` | Open-source node — Phoenix web app + NIFs (this repo) |
 | **cyanea-hub** | `github.com/cyanea-bio/cyanea-hub` | Private hub at app.cyanea.bio |
-| **labs** | `github.com/cyanea-bio/labs` | Rust bioinformatics ecosystem (Cargo workspace, 13 crates) |
+| **labs** | `github.com/cyanea-bio/labs` | Rust bioinformatics ecosystem (Cargo workspace, 18 crates) |
 | **www** | `github.com/cyanea-bio/www` | Marketing website (Zola) |
 
 ### Key Files in This Repo

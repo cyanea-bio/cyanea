@@ -91,7 +91,7 @@ defmodule CyaneaWeb.Api.V1.SpaceController do
          :ok <- authorize_write(space, user) do
       attrs =
         params
-        |> Map.take(["name", "slug", "description", "visibility", "license", "tags", "archived"])
+        |> Map.take(["name", "slug", "description", "visibility", "license", "tags", "archived", "readme"])
         |> atomize_keys()
 
       case Spaces.update_space(space, attrs) do

@@ -303,8 +303,8 @@ defmodule CyaneaWeb.SpaceLive.Show do
       <%!-- Breadcrumb --%>
       <div class="flex items-center gap-3">
         <.breadcrumb>
-          <:crumb navigate={~p"/#{@owner_name}"}><%= @owner_name %></:crumb>
-          <:crumb><%= @space.name %></:crumb>
+          <:crumb navigate={~p"/#{@owner_name}"}>{@owner_name}</:crumb>
+          <:crumb>{@space.name}</:crumb>
         </.breadcrumb>
         <.visibility_badge visibility={@space.visibility} />
       </div>
@@ -358,7 +358,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
           navigate={~p"/#{@forked_from.owner_name}/#{@forked_from.slug}"}
           class="font-medium text-primary hover:underline"
         >
-          <%= @forked_from.owner_name %>/<%= @forked_from.name %>
+          {@forked_from.owner_name}/{@forked_from.name}
         </.link>
       </p>
 
@@ -366,9 +366,9 @@ defmodule CyaneaWeb.SpaceLive.Show do
       <.card class="mt-6">
         <div class="flex items-start justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white"><%= @space.name %></h1>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{@space.name}</h1>
             <p :if={@space.description} class="mt-2 text-slate-600 dark:text-slate-400">
-              <%= @space.description %>
+              {@space.description}
             </p>
           </div>
           <div class="flex items-center gap-3">
@@ -379,7 +379,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
                   class="flex items-center gap-1 rounded-lg border border-yellow-300 bg-yellow-50 px-3 py-1.5 text-sm text-yellow-700 dark:border-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400"
                 >
                   <.icon name="hero-star-solid" class="h-4 w-4" />
-                  <%= @space.star_count %>
+                  {@space.star_count}
                 </button>
               <% else %>
                 <button
@@ -387,7 +387,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
                   class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-700"
                 >
                   <.icon name="hero-star" class="h-4 w-4" />
-                  <%= @space.star_count %>
+                  {@space.star_count}
                 </button>
               <% end %>
 
@@ -398,18 +398,20 @@ defmodule CyaneaWeb.SpaceLive.Show do
                 data-confirm="Fork this space? A copy will be created under your account."
                 class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
               >
-                <.icon name="hero-arrow-path-rounded-square" class="h-4 w-4" />
-                Fork
-                <span :if={@space.fork_count > 0} class="text-slate-400"><%= @space.fork_count %></span>
+                <.icon name="hero-arrow-path-rounded-square" class="h-4 w-4" /> Fork
+                <span :if={@space.fork_count > 0} class="text-slate-400">{@space.fork_count}</span>
               </button>
             <% else %>
               <span class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-700">
                 <.icon name="hero-star" class="h-4 w-4" />
-                <%= @space.star_count %>
+                {@space.star_count}
               </span>
-              <span :if={@space.fork_count > 0} class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-700">
+              <span
+                :if={@space.fork_count > 0}
+                class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-700"
+              >
                 <.icon name="hero-arrow-path-rounded-square" class="h-4 w-4" />
-                <%= @space.fork_count %>
+                {@space.fork_count}
               </span>
             <% end %>
             <%!-- Publish/Unpublish button (owner, public spaces only) --%>
@@ -420,8 +422,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
                   data-confirm="Unpublish this space from the federation network?"
                   class="flex items-center gap-1 rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-sm text-green-700 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400"
                 >
-                  <.icon name="hero-globe-alt" class="h-4 w-4" />
-                  Published
+                  <.icon name="hero-globe-alt" class="h-4 w-4" /> Published
                 </button>
               <% else %>
                 <button
@@ -429,8 +430,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
                   data-confirm="Publish this space to the federation network?"
                   class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
                 >
-                  <.icon name="hero-globe-alt" class="h-4 w-4" />
-                  Publish
+                  <.icon name="hero-globe-alt" class="h-4 w-4" /> Publish
                 </button>
               <% end %>
             <% end %>
@@ -442,8 +442,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
               navigate={~p"/#{@owner_name}/#{@space.slug}/settings"}
               class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
             >
-              <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
-              Settings
+              <.icon name="hero-cog-6-tooth" class="h-4 w-4" /> Settings
             </.link>
           </div>
         </div>
@@ -451,20 +450,20 @@ defmodule CyaneaWeb.SpaceLive.Show do
         <%!-- Metadata --%>
         <div class="mt-4 flex flex-wrap items-center gap-4">
           <.metadata_row :if={@space.license} icon="hero-scale">
-            <%= CyaneaWeb.Formatters.license_display(@space.license) %>
+            {CyaneaWeb.Formatters.license_display(@space.license)}
           </.metadata_row>
           <.metadata_row icon="hero-clock">
-            Updated <%= CyaneaWeb.Formatters.format_date(@space.updated_at) %>
+            Updated {CyaneaWeb.Formatters.format_date(@space.updated_at)}
           </.metadata_row>
           <.fair_badge score={@fair_score} />
           <.metadata_row :if={@space.doi} icon="hero-link">
-            DOI: <%= @space.doi %>
+            DOI: {@space.doi}
           </.metadata_row>
         </div>
 
         <%!-- Tags --%>
         <div :if={@space.tags != []} class="mt-4 flex flex-wrap gap-2">
-          <.badge :for={tag <- @space.tags} color={:primary}><%= tag %></.badge>
+          <.badge :for={tag <- @space.tags} color={:primary}>{tag}</.badge>
         </div>
       </.card>
 
@@ -474,19 +473,44 @@ defmodule CyaneaWeb.SpaceLive.Show do
           <:tab active={@active_tab == "overview"} click="switch-tab" value="overview">
             Overview
           </:tab>
-          <:tab active={@active_tab == "notebooks"} click="switch-tab" value="notebooks" count={length(@notebooks)}>
+          <:tab
+            active={@active_tab == "notebooks"}
+            click="switch-tab"
+            value="notebooks"
+            count={length(@notebooks)}
+          >
             Notebooks
           </:tab>
-          <:tab active={@active_tab == "protocols"} click="switch-tab" value="protocols" count={length(@protocols)}>
+          <:tab
+            active={@active_tab == "protocols"}
+            click="switch-tab"
+            value="protocols"
+            count={length(@protocols)}
+          >
             Protocols
           </:tab>
-          <:tab active={@active_tab == "datasets"} click="switch-tab" value="datasets" count={length(@datasets)}>
+          <:tab
+            active={@active_tab == "datasets"}
+            click="switch-tab"
+            value="datasets"
+            count={length(@datasets)}
+          >
             Datasets
           </:tab>
-          <:tab active={@active_tab == "files"} click="switch-tab" value="files" count={length(@files)}>
+          <:tab
+            active={@active_tab == "files"}
+            click="switch-tab"
+            value="files"
+            count={length(@files)}
+          >
             Files
           </:tab>
-          <:tab active={@active_tab == "discussions"} click="switch-tab" value="discussions" count={@space.discussion_count}>
+          <:tab
+            active={@active_tab == "discussions"}
+            click="switch-tab"
+            value="discussions"
+            count={@space.discussion_count}
+          >
             Discussions
           </:tab>
           <:tab active={@active_tab == "activity"} click="switch-tab" value="activity">
@@ -499,16 +523,28 @@ defmodule CyaneaWeb.SpaceLive.Show do
       <div class="mt-6">
         <%!-- Overview --%>
         <div :if={@active_tab == "overview"}>
+          <%!-- README --%>
+          <div :if={@space.readme && @space.readme != ""} class="mb-6">
+            <.card>
+              <:header>
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">README</h3>
+              </:header>
+              <div class="prose prose-sm dark:prose-invert max-w-none">
+                {CyaneaWeb.Markdown.render(@space.readme)}
+              </div>
+            </.card>
+          </div>
+
           <div class="grid gap-6 md:grid-cols-2">
             <.card>
               <:header>
                 <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Contents</h3>
               </:header>
               <.description_list>
-                <:item term="Notebooks"><%= length(@notebooks) %></:item>
-                <:item term="Protocols"><%= length(@protocols) %></:item>
-                <:item term="Datasets"><%= length(@datasets) %></:item>
-                <:item term="Files"><%= length(@files) %></:item>
+                <:item term="Notebooks">{length(@notebooks)}</:item>
+                <:item term="Protocols">{length(@protocols)}</:item>
+                <:item term="Datasets">{length(@datasets)}</:item>
+                <:item term="Files">{length(@files)}</:item>
               </.description_list>
             </.card>
 
@@ -531,8 +567,8 @@ defmodule CyaneaWeb.SpaceLive.Show do
                   :for={term <- @space.ontology_terms}
                   class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary dark:bg-primary/20"
                 >
-                  <span class="font-mono text-[10px] opacity-70"><%= term["id"] %></span>
-                  <%= term["label"] %>
+                  <span class="font-mono text-[10px] opacity-70">{term["id"]}</span>
+                  {term["label"]}
                 </span>
               </div>
             </.card>
@@ -574,7 +610,9 @@ defmodule CyaneaWeb.SpaceLive.Show do
               >
                 <div class="flex items-center gap-3">
                   <.icon name="hero-book-open" class="h-5 w-5 text-slate-400 shrink-0" />
-                  <span class="text-sm font-medium text-slate-900 dark:text-white"><%= notebook.title %></span>
+                  <span class="text-sm font-medium text-slate-900 dark:text-white">
+                    {notebook.title}
+                  </span>
                 </div>
               </.link>
             </div>
@@ -614,8 +652,10 @@ defmodule CyaneaWeb.SpaceLive.Show do
                 <div class="flex items-center gap-3">
                   <.icon name="hero-clipboard-document-list" class="h-5 w-5 text-slate-400 shrink-0" />
                   <div>
-                    <span class="text-sm font-medium text-slate-900 dark:text-white"><%= protocol.title %></span>
-                    <span class="ml-2 text-xs text-slate-500">v<%= protocol.version %></span>
+                    <span class="text-sm font-medium text-slate-900 dark:text-white">
+                      {protocol.title}
+                    </span>
+                    <span class="ml-2 text-xs text-slate-500">v{protocol.version}</span>
                   </div>
                 </div>
               </.link>
@@ -655,10 +695,12 @@ defmodule CyaneaWeb.SpaceLive.Show do
               >
                 <div class="flex items-center gap-3">
                   <.icon name="hero-circle-stack" class="h-5 w-5 text-slate-400 shrink-0" />
-                  <span class="text-sm font-medium text-slate-900 dark:text-white"><%= dataset.name %></span>
+                  <span class="text-sm font-medium text-slate-900 dark:text-white">
+                    {dataset.name}
+                  </span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <.badge :for={tag <- dataset.tags || []} color={:gray} size={:xs}><%= tag %></.badge>
+                  <.badge :for={tag <- dataset.tags || []} color={:gray} size={:xs}>{tag}</.badge>
                 </div>
               </.link>
             </div>
@@ -684,7 +726,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
           <div :if={@is_owner} class="mb-6">
             <.upload_zone upload={@uploads.files} />
             <div :for={err <- upload_errors(@uploads.files)} class="mt-2 text-sm text-red-600">
-              <%= upload_error_to_string(err) %>
+              {upload_error_to_string(err)}
             </div>
           </div>
 
@@ -703,15 +745,17 @@ defmodule CyaneaWeb.SpaceLive.Show do
                           navigate={~p"/#{@owner_name}/#{@space.slug}/files/#{file.id}"}
                           class="text-sm font-medium text-primary hover:underline"
                         >
-                          <%= file.name %>
+                          {file.name}
                         </.link>
                       </div>
                     </td>
                     <td class="px-6 py-3 text-right text-xs text-slate-500">
-                      <%= if file.blob && file.blob.size, do: CyaneaWeb.Formatters.format_size(file.blob.size), else: "-" %>
+                      {if file.blob && file.blob.size,
+                        do: CyaneaWeb.Formatters.format_size(file.blob.size),
+                        else: "-"}
                     </td>
                     <td class="px-6 py-3 text-right text-xs text-slate-500">
-                      <%= if file.blob, do: file.blob.mime_type || "-", else: "-" %>
+                      {if file.blob, do: file.blob.mime_type || "-", else: "-"}
                     </td>
                     <td class="px-6 py-3 text-right">
                       <div class="flex items-center justify-end gap-2">
@@ -752,7 +796,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
             </.link>
           </div>
           <p class="mt-4 text-sm text-slate-500">
-            This space has <%= @space.discussion_count %> discussion(s).
+            This space has {@space.discussion_count} discussion(s).
             <.link
               navigate={~p"/#{@owner_name}/#{@space.slug}/discussions"}
               class="text-primary hover:underline"
@@ -766,7 +810,10 @@ defmodule CyaneaWeb.SpaceLive.Show do
         <div :if={@active_tab == "activity"}>
           <.card>
             <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Recent activity</h3>
-            <div :if={@activity_events != []} class="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+            <div
+              :if={@activity_events != []}
+              class="mt-3 divide-y divide-slate-100 dark:divide-slate-700"
+            >
               <.activity_event :for={event <- @activity_events} event={event} />
             </div>
             <p :if={@activity_events == []} class="mt-3 text-sm text-slate-500">

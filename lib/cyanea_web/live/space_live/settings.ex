@@ -63,7 +63,11 @@ defmodule CyaneaWeb.SpaceLive.Settings do
 
       {:error, :pro_required} ->
         {:noreply,
-         put_flash(socket, :error, "Private visibility requires a Pro plan. Upgrade to unlock private spaces.")}
+         put_flash(
+           socket,
+           :error,
+           "Private visibility requires a Pro plan. Upgrade to unlock private spaces."
+         )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -104,13 +108,26 @@ defmodule CyaneaWeb.SpaceLive.Settings do
     <div class="mx-auto max-w-2xl">
       <.header>
         Space settings
-        <:subtitle><%= @owner_name %>/<%= @space.name %></:subtitle>
+        <:subtitle>{@owner_name}/{@space.name}</:subtitle>
       </.header>
 
       <div class="mt-8 rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
         <.simple_form for={@form} phx-change="validate" phx-submit="save">
           <.input field={@form[:name]} type="text" label="Space name" required />
           <.input field={@form[:description]} type="textarea" label="Description" rows="3" />
+
+          <div>
+            <.input
+              field={@form[:readme]}
+              type="textarea"
+              label="README"
+              rows="10"
+              phx-debounce="blur"
+            />
+            <p class="mt-1 text-sm text-slate-500">
+              Shown on the space overview. Supports Markdown.
+            </p>
+          </div>
 
           <.input
             field={@form[:visibility]}
@@ -119,7 +136,10 @@ defmodule CyaneaWeb.SpaceLive.Settings do
             options={[{"Public", "public"}, {"Private", "private"}]}
           />
 
-          <p :if={!@can_go_private && @space.visibility != "private"} class="-mt-2 text-sm text-slate-500">
+          <p
+            :if={!@can_go_private && @space.visibility != "private"}
+            class="-mt-2 text-sm text-slate-500"
+          >
             Private visibility requires a Pro plan.
             <.link navigate={~p"/settings/billing"} class="font-medium text-primary hover:underline">
               Upgrade to Pro

@@ -69,6 +69,26 @@ defmodule CyaneaWeb.DatasetLive.ShowTest do
 
       assert html =~ "Updated description" or html =~ "Metadata saved"
     end
+
+    test "shows the dataset download count", %{
+      conn: conn,
+      user: user,
+      space: space,
+      dataset: dataset
+    } do
+      # Bump the counter the way a real blob download would
+      for _ <- 1..3, do: Cyanea.Datasets.increment_download_count(dataset.id)
+
+      {:ok, view, html} =
+        live(conn, ~p"/#{user.username}/#{space.slug}/datasets/rna-seq-counts")
+
+      # Header stat is present
+      assert html =~ "Downloads"
+
+      # Metadata tab lists the current count (only the Downloads value is "3" here)
+      render_click(view, "switch-tab", %{"tab" => "metadata"})
+      assert has_element?(view, "dd", "3")
+    end
   end
 
   describe "viewer (read-only)" do

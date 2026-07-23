@@ -700,6 +700,14 @@ defmodule CyaneaWeb.SpaceLive.Show do
                   </span>
                 </div>
                 <div class="flex items-center gap-2">
+                  <span
+                    :if={dataset.download_count > 0}
+                    class="inline-flex items-center gap-1 text-xs text-slate-400"
+                    title="Downloads"
+                  >
+                    <.icon name="hero-arrow-down-tray" class="h-3.5 w-3.5" />
+                    {dataset.download_count}
+                  </span>
                   <.badge :for={tag <- dataset.tags || []} color={:gray} size={:xs}>{tag}</.badge>
                 </div>
               </.link>

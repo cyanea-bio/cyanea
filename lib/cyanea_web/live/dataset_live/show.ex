@@ -170,32 +170,38 @@ defmodule CyaneaWeb.DatasetLive.Show do
     <div>
       <%!-- Breadcrumb --%>
       <.breadcrumb>
-        <:crumb navigate={~p"/#{@owner_name}"}><%= @owner_name %></:crumb>
-        <:crumb navigate={~p"/#{@owner_name}/#{@space.slug}"}><%= @space.name %></:crumb>
-        <:crumb><%= @dataset.name %></:crumb>
+        <:crumb navigate={~p"/#{@owner_name}"}>{@owner_name}</:crumb>
+        <:crumb navigate={~p"/#{@owner_name}/#{@space.slug}"}>{@space.name}</:crumb>
+        <:crumb>{@dataset.name}</:crumb>
       </.breadcrumb>
 
       <%!-- Dataset info --%>
       <div class="mt-6 flex items-start justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-slate-900 dark:text-white"><%= @dataset.name %></h1>
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{@dataset.name}</h1>
           <p :if={@dataset.description} class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            <%= @dataset.description %>
+            {@dataset.description}
           </p>
           <div :if={@dataset.tags != []} class="mt-2 flex flex-wrap gap-1">
-            <.badge :for={tag <- @dataset.tags} color={:primary} size={:xs}><%= tag %></.badge>
+            <.badge :for={tag <- @dataset.tags} color={:primary} size={:xs}>{tag}</.badge>
           </div>
         </div>
         <div class="flex items-center gap-4 text-center">
           <.stat value={@stats.file_count} label="Files" />
           <.stat value={format_size(@stats.total_size)} label="Total size" />
+          <.stat value={@dataset.download_count} label="Downloads" icon="hero-arrow-down-tray" />
         </div>
       </div>
 
       <%!-- Tabs --%>
       <div class="mt-6">
         <.tabs>
-          <:tab active={@active_tab == "files"} click="switch-tab" value="files" count={@stats.file_count}>
+          <:tab
+            active={@active_tab == "files"}
+            click="switch-tab"
+            value="files"
+            count={@stats.file_count}
+          >
             Files
           </:tab>
           <:tab active={@active_tab == "preview"} click="switch-tab" value="preview">
@@ -214,8 +220,11 @@ defmodule CyaneaWeb.DatasetLive.Show do
           <div :if={@is_owner} class="mb-6">
             <form phx-change="validate-upload" phx-submit="upload">
               <.upload_zone upload={@uploads.dataset_files} />
-              <div :for={err <- upload_errors(@uploads.dataset_files)} class="mt-2 text-sm text-red-600">
-                <%= upload_error_to_string(err) %>
+              <div
+                :for={err <- upload_errors(@uploads.dataset_files)}
+                class="mt-2 text-sm text-red-600"
+              >
+                {upload_error_to_string(err)}
               </div>
               <button
                 :if={@uploads.dataset_files.entries != []}
@@ -243,16 +252,21 @@ defmodule CyaneaWeb.DatasetLive.Show do
                           href={~p"/blobs/#{file.blob_id}/download"}
                           class="text-sm font-medium text-primary hover:underline"
                         >
-                          <%= file.path %>
+                          {file.path}
                         </.link>
-                        <span :if={!file.blob} class="text-sm font-medium text-slate-900 dark:text-white"><%= file.path %></span>
+                        <span
+                          :if={!file.blob}
+                          class="text-sm font-medium text-slate-900 dark:text-white"
+                        >
+                          {file.path}
+                        </span>
                       </div>
                     </td>
                     <td class="px-6 py-3 text-right text-xs text-slate-500">
-                      <%= format_size(file.size || 0) %>
+                      {format_size(file.size || 0)}
                     </td>
                     <td class="px-6 py-3 text-right text-xs text-slate-500">
-                      <%= if file.blob, do: file.blob.mime_type || "-", else: "-" %>
+                      {if file.blob, do: file.blob.mime_type || "-", else: "-"}
                     </td>
                     <td class="px-6 py-3 text-right">
                       <div class="flex items-center justify-end gap-2">
@@ -314,7 +328,9 @@ defmodule CyaneaWeb.DatasetLive.Show do
             <%= if @editing_metadata do %>
               <form phx-submit="save-metadata" class="space-y-4">
                 <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+                  <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Description
+                  </label>
                   <textarea
                     name="description"
                     rows="3"
@@ -322,7 +338,9 @@ defmodule CyaneaWeb.DatasetLive.Show do
                   ><%= @dataset.description %></textarea>
                 </div>
                 <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Tags (comma-separated)</label>
+                  <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Tags (comma-separated)
+                  </label>
                   <input
                     type="text"
                     name="tags"
@@ -331,8 +349,19 @@ defmodule CyaneaWeb.DatasetLive.Show do
                   />
                 </div>
                 <div class="flex justify-end gap-2">
-                  <button type="button" phx-click="cancel-edit" class="text-sm text-slate-500 hover:text-slate-700">Cancel</button>
-                  <button type="submit" class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90">Save</button>
+                  <button
+                    type="button"
+                    phx-click="cancel-edit"
+                    class="text-sm text-slate-500 hover:text-slate-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90"
+                  >
+                    Save
+                  </button>
                 </div>
               </form>
             <% else %>
@@ -347,13 +376,14 @@ defmodule CyaneaWeb.DatasetLive.Show do
                 </button>
               </div>
               <.description_list>
-                <:item term="Name"><%= @dataset.name %></:item>
-                <:item term="Storage"><%= @dataset.storage_type %></:item>
-                <:item term="External URL"><%= @dataset.external_url || "-" %></:item>
-                <:item term="Files"><%= @stats.file_count %></:item>
-                <:item term="Total size"><%= format_size(@stats.total_size) %></:item>
-                <:item term="Formats"><%= Enum.join(@stats.formats, ", ") %></:item>
-                <:item term="Tags"><%= Enum.join(@dataset.tags || [], ", ") %></:item>
+                <:item term="Name">{@dataset.name}</:item>
+                <:item term="Storage">{@dataset.storage_type}</:item>
+                <:item term="External URL">{@dataset.external_url || "-"}</:item>
+                <:item term="Files">{@stats.file_count}</:item>
+                <:item term="Total size">{format_size(@stats.total_size)}</:item>
+                <:item term="Downloads">{@dataset.download_count}</:item>
+                <:item term="Formats">{Enum.join(@stats.formats, ", ")}</:item>
+                <:item term="Tags">{Enum.join(@dataset.tags || [], ", ")}</:item>
               </.description_list>
             <% end %>
           </.card>
@@ -370,9 +400,11 @@ defmodule CyaneaWeb.DatasetLive.Show do
     <div>
       <h3 class="mb-3 text-sm font-semibold text-slate-900 dark:text-white">CSV Statistics</h3>
       <.description_list>
-        <:item :if={@metadata["row_count"]} term="Rows"><%= @metadata["row_count"] %></:item>
-        <:item :if={@metadata["column_count"]} term="Columns"><%= @metadata["column_count"] %></:item>
-        <:item :if={@metadata["columns"]} term="Column names"><%= Enum.join(@metadata["columns"], ", ") %></:item>
+        <:item :if={@metadata["row_count"]} term="Rows">{@metadata["row_count"]}</:item>
+        <:item :if={@metadata["column_count"]} term="Columns">{@metadata["column_count"]}</:item>
+        <:item :if={@metadata["columns"]} term="Column names">
+          {Enum.join(@metadata["columns"], ", ")}
+        </:item>
       </.description_list>
     </div>
     """
@@ -383,9 +415,15 @@ defmodule CyaneaWeb.DatasetLive.Show do
     <div>
       <h3 class="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Sequence Statistics</h3>
       <.description_list>
-        <:item :if={@metadata["sequence_count"]} term="Sequences"><%= @metadata["sequence_count"] %></:item>
-        <:item :if={@metadata["total_length"]} term="Total length"><%= @metadata["total_length"] %> bp</:item>
-        <:item :if={@metadata["gc_content"]} term="GC content"><%= Float.round(@metadata["gc_content"] * 100, 1) %>%</:item>
+        <:item :if={@metadata["sequence_count"]} term="Sequences">
+          {@metadata["sequence_count"]}
+        </:item>
+        <:item :if={@metadata["total_length"]} term="Total length">
+          {@metadata["total_length"]} bp
+        </:item>
+        <:item :if={@metadata["gc_content"]} term="GC content">
+          {Float.round(@metadata["gc_content"] * 100, 1)}%
+        </:item>
       </.description_list>
     </div>
     """

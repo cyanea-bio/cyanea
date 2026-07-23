@@ -129,6 +129,17 @@ defmodule CyaneaWeb.Api.V1.SpaceControllerTest do
       assert data["description"] == "Updated"
     end
 
+    test "updates and returns the readme", %{conn: conn, user: user, space: space} do
+      conn =
+        conn
+        |> api_auth_conn(user)
+        |> put_req_header("content-type", "application/json")
+        |> patch("/api/v1/spaces/#{space.id}", %{readme: "# Overview\n\nHello."})
+
+      assert %{"data" => data} = json_response(conn, 200)
+      assert data["readme"] == "# Overview\n\nHello."
+    end
+
     test "returns 403 for non-owner", %{conn: conn, space: space} do
       other_user = user_fixture()
 

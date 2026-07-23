@@ -18,6 +18,7 @@ defmodule CyaneaWeb.Api.V1.ApiHelpers do
       owner_type: space.owner_type,
       owner_id: space.owner_id,
       owner_name: Cyanea.Spaces.owner_display(space),
+      readme: space.readme,
       forked_from_id: space.forked_from_id,
       inserted_at: format_datetime(space.inserted_at),
       updated_at: format_datetime(space.updated_at)

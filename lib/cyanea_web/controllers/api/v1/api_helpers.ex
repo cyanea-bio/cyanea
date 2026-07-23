@@ -64,6 +64,7 @@ defmodule CyaneaWeb.Api.V1.ApiHelpers do
       metadata: dataset.metadata,
       tags: dataset.tags || [],
       position: dataset.position,
+      download_count: dataset.download_count,
       space_id: dataset.space_id,
       inserted_at: format_datetime(dataset.inserted_at),
       updated_at: format_datetime(dataset.updated_at)

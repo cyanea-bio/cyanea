@@ -32,6 +32,7 @@ defmodule CyaneaWeb.Api.V1.DatasetControllerTest do
       conn = get(conn, "/api/v1/spaces/#{space.id}/datasets/#{dataset.id}")
       assert %{"data" => data} = json_response(conn, 200)
       assert data["name"] == "Test Dataset"
+      assert data["download_count"] == 0
     end
   end
 
@@ -90,7 +91,12 @@ defmodule CyaneaWeb.Api.V1.DatasetControllerTest do
 
   describe "POST /api/v1/spaces/:space_id/datasets/:dataset_id/files" do
     @tag :requires_s3
-    test "uploads a file (requires MinIO)", %{conn: conn, user: user, space: space, dataset: dataset} do
+    test "uploads a file (requires MinIO)", %{
+      conn: conn,
+      user: user,
+      space: space,
+      dataset: dataset
+    } do
       upload = %Plug.Upload{
         path: create_tmp_file("hello,world\n"),
         filename: "data.csv",
@@ -107,7 +113,12 @@ defmodule CyaneaWeb.Api.V1.DatasetControllerTest do
       assert data["mime_type"] == "text/csv"
     end
 
-    test "returns 400 when no file provided", %{conn: conn, user: user, space: space, dataset: dataset} do
+    test "returns 400 when no file provided", %{
+      conn: conn,
+      user: user,
+      space: space,
+      dataset: dataset
+    } do
       conn =
         conn
         |> api_auth_conn(user)

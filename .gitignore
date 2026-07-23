@@ -7,6 +7,11 @@
 /priv/static/assets/
 *.ez
 
+# Digested static assets (mix phx.digest output; source cyanea_wasm_bg.wasm stays tracked)
+/priv/static/cache_manifest.json
+/priv/static/wasm/cyanea_wasm_bg-*.wasm
+/priv/static/wasm/cyanea_wasm_bg-*.wasm.gz
+
 # Local configuration
 /config/*.secret.exs
 .fetch

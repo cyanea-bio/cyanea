@@ -40,6 +40,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
         notebooks = Notebooks.list_space_notebooks(space.id)
         protocols = Protocols.list_space_protocols(space.id)
         datasets = Datasets.list_space_datasets(space.id)
+        total_downloads = Map.get(Spaces.total_downloads_for([space.id]), space.id, 0)
         starred = current_user && Stars.starred?(current_user.id, space.id)
 
         # Load forked-from space info
@@ -72,6 +73,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
             notebooks: notebooks,
             protocols: protocols,
             datasets: datasets,
+            total_downloads: total_downloads,
             starred: starred || false,
             active_tab: "overview",
             forked_from: forked_from,
@@ -545,6 +547,7 @@ defmodule CyaneaWeb.SpaceLive.Show do
                 <:item term="Protocols">{length(@protocols)}</:item>
                 <:item term="Datasets">{length(@datasets)}</:item>
                 <:item term="Files">{length(@files)}</:item>
+                <:item :if={@total_downloads > 0} term="Downloads">{@total_downloads}</:item>
               </.description_list>
             </.card>
 

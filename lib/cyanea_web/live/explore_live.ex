@@ -13,9 +13,10 @@ defmodule CyaneaWeb.ExploreLive do
     trending = Spaces.list_trending_spaces(limit: 5)
 
     {:ok,
-     assign(socket,
+     socket
+     |> assign_spaces(spaces)
+     |> assign(
        page_title: "Explore",
-       spaces: spaces,
        trending: trending,
        search_query: "",
        active_tab: :spaces,
@@ -30,10 +31,12 @@ defmodule CyaneaWeb.ExploreLive do
   def handle_event("search", %{"query" => query}, socket) do
     if query == "" do
       spaces = load_spaces(socket.assigns.sort)
-      {:noreply, assign(socket, spaces: spaces, search_query: "", user_results: [])}
+      {:noreply, socket |> assign_spaces(spaces) |> assign(search_query: "", user_results: [])}
     else
       {spaces, user_results} = perform_search(query)
-      {:noreply, assign(socket, spaces: spaces, search_query: query, user_results: user_results)}
+
+      {:noreply,
+       socket |> assign_spaces(spaces) |> assign(search_query: query, user_results: user_results)}
     end
   end
 
@@ -53,21 +56,28 @@ defmodule CyaneaWeb.ExploreLive do
 
   def handle_event("sort", %{"sort" => sort}, socket) do
     spaces = load_spaces(sort)
-    {:noreply, assign(socket, spaces: spaces, sort: sort)}
+    {:noreply, socket |> assign_spaces(spaces) |> assign(sort: sort)}
   end
 
   def handle_event("filter-ontology", %{"ontology" => term}, socket) do
     if String.trim(term) == "" do
       spaces = load_spaces(socket.assigns.sort)
-      {:noreply, assign(socket, spaces: spaces, ontology_filter: "")}
+      {:noreply, socket |> assign_spaces(spaces) |> assign(ontology_filter: "")}
     else
       spaces = filter_by_ontology(term)
-      {:noreply, assign(socket, spaces: spaces, ontology_filter: term)}
+      {:noreply, socket |> assign_spaces(spaces) |> assign(ontology_filter: term)}
     end
   end
 
   defp load_spaces("most_starred"), do: Spaces.list_trending_spaces(limit: 50)
+  defp load_spaces("most_downloaded"), do: Spaces.list_most_downloaded_spaces(limit: 50)
   defp load_spaces(_), do: Spaces.list_public_spaces()
+
+  # Assigns the space list plus a `space_id => total downloads` map for card badges.
+  defp assign_spaces(socket, spaces) do
+    totals = Spaces.total_downloads_for(Enum.map(spaces, & &1.id))
+    assign(socket, spaces: spaces, download_totals: totals)
+  end
 
   defp perform_search(query) do
     space_results =
@@ -139,10 +149,21 @@ defmodule CyaneaWeb.ExploreLive do
       <%!-- Tabs --%>
       <div class="mt-6">
         <.tabs>
-          <:tab active={@active_tab == :spaces} click="switch-tab" value="spaces" count={length(@spaces)}>
+          <:tab
+            active={@active_tab == :spaces}
+            click="switch-tab"
+            value="spaces"
+            count={length(@spaces)}
+          >
             Spaces
           </:tab>
-          <:tab :if={@search_query != ""} active={@active_tab == :users} click="switch-tab" value="users" count={length(@user_results)}>
+          <:tab
+            :if={@search_query != ""}
+            active={@active_tab == :users}
+            click="switch-tab"
+            value="users"
+            count={length(@user_results)}
+          >
             Users
           </:tab>
           <:tab active={@active_tab == :activity} click="switch-tab" value="activity">
@@ -179,18 +200,25 @@ defmodule CyaneaWeb.ExploreLive do
       <div :if={@active_tab == :spaces && @search_query == ""} class="mt-4 flex items-center gap-2">
         <span class="text-sm text-slate-500">Sort:</span>
         <button
-          :for={{label, value} <- [{"Recently updated", "recently_updated"}, {"Most starred", "most_starred"}]}
+          :for={
+            {label, value} <- [
+              {"Recently updated", "recently_updated"},
+              {"Most starred", "most_starred"},
+              {"Most downloaded", "most_downloaded"}
+            ]
+          }
           phx-click="sort"
           phx-value-sort={value}
           class={[
             "rounded-lg px-3 py-1 text-sm",
             if(@sort == value,
               do: "bg-primary text-white",
-              else: "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300"
+              else:
+                "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300"
             )
           ]}
         >
-          <%= label %>
+          {label}
         </button>
       </div>
 
@@ -204,8 +232,8 @@ defmodule CyaneaWeb.ExploreLive do
             class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
           >
             <.icon name="hero-star" class="h-3.5 w-3.5 text-yellow-500" />
-            <span class="text-slate-500"><%= space_owner_name(space) %>/</span><%= space.name %>
-            <span class="text-xs text-slate-400"><%= space.star_count %></span>
+            <span class="text-slate-500"><%= space_owner_name(space) %>/</span>{space.name}
+            <span class="text-xs text-slate-400">{space.star_count}</span>
           </.link>
         </div>
       </div>
@@ -223,23 +251,26 @@ defmodule CyaneaWeb.ExploreLive do
                   navigate={space_path(space)}
                   class="text-lg font-semibold text-primary hover:underline"
                 >
-                  <span class="text-slate-500"><%= space_owner_name(space) %>/</span><%= space.name %>
+                  <span class="text-slate-500"><%= space_owner_name(space) %>/</span>{space.name}
                 </.link>
                 <.visibility_badge visibility={space.visibility} />
               </div>
               <p :if={space.description} class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-                <%= space.description %>
+                {space.description}
               </p>
               <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                 <.metadata_row :if={space.license} icon="hero-scale">
-                  <%= space.license %>
+                  {space.license}
                 </.metadata_row>
-                <.badge :for={tag <- space.tags || []} color={:gray} size={:xs}><%= tag %></.badge>
+                <.badge :for={tag <- space.tags || []} color={:gray} size={:xs}>{tag}</.badge>
                 <.metadata_row icon="hero-star">
-                  <%= space.star_count %>
+                  {space.star_count}
                 </.metadata_row>
                 <.metadata_row :if={space.fork_count > 0} icon="hero-arrow-path-rounded-square">
-                  <%= space.fork_count %>
+                  {space.fork_count}
+                </.metadata_row>
+                <.metadata_row :if={(@download_totals[space.id] || 0) > 0} icon="hero-arrow-down-tray">
+                  {@download_totals[space.id]}
                 </.metadata_row>
               </div>
             </div>
@@ -260,11 +291,16 @@ defmodule CyaneaWeb.ExploreLive do
         >
           <.avatar name={user["username"] || ""} size={:md} />
           <div>
-            <.link navigate={~p"/#{user["username"]}"} class="font-semibold text-primary hover:underline">
-              <%= user["name"] || user["username"] %>
+            <.link
+              navigate={~p"/#{user["username"]}"}
+              class="font-semibold text-primary hover:underline"
+            >
+              {user["name"] || user["username"]}
             </.link>
-            <p class="text-xs text-slate-500">@<%= user["username"] %></p>
-            <p :if={user["affiliation"] && user["affiliation"] != ""} class="text-xs text-slate-400"><%= user["affiliation"] %></p>
+            <p class="text-xs text-slate-500">@{user["username"]}</p>
+            <p :if={user["affiliation"] && user["affiliation"] != ""} class="text-xs text-slate-400">
+              {user["affiliation"]}
+            </p>
           </div>
         </div>
 
@@ -275,7 +311,10 @@ defmodule CyaneaWeb.ExploreLive do
       <div :if={@active_tab == :activity} class="mt-8">
         <.card>
           <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Global activity</h3>
-          <div :if={@activity_events != []} class="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+          <div
+            :if={@activity_events != []}
+            class="mt-3 divide-y divide-slate-100 dark:divide-slate-700"
+          >
             <.activity_event :for={event <- @activity_events} event={event} />
           </div>
           <p :if={@activity_events == []} class="mt-3 text-sm text-slate-500">

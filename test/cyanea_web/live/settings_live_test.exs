@@ -27,5 +27,16 @@ defmodule CyaneaWeb.SettingsLiveTest do
 
       assert result =~ "Profile updated successfully"
     end
+
+    test "save persists the profile README", %{conn: conn} do
+      user = user_fixture()
+      {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/settings")
+
+      lv
+      |> element("form")
+      |> render_submit(%{user: %{readme: "# About me\n\nI study cyanobacteria."}})
+
+      assert Cyanea.Accounts.get_user(user.id).readme == "# About me\n\nI study cyanobacteria."
+    end
   end
 end

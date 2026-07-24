@@ -30,7 +30,8 @@ defmodule CyaneaWeb.UserLive.Show do
 
             org_admin =
               current_user &&
-                Organizations.authorize(current_user.id, org.id, "admin") != {:error, :unauthorized}
+                Organizations.authorize(current_user.id, org.id, "admin") !=
+                  {:error, :unauthorized}
 
             {:ok,
              assign(socket,
@@ -176,19 +177,42 @@ defmodule CyaneaWeb.UserLive.Show do
 
       <%!-- Main Content --%>
       <div>
+        <%!-- Profile README --%>
+        <.profile_readme content={if @profile_type == :user, do: @user.readme, else: @org.readme} />
+
         <%!-- Tabs --%>
         <div class="mb-4">
           <.tabs>
-            <:tab active={@active_tab == :spaces} click="switch-tab" value="spaces" count={length(@spaces)}>
+            <:tab
+              active={@active_tab == :spaces}
+              click="switch-tab"
+              value="spaces"
+              count={length(@spaces)}
+            >
               Spaces
             </:tab>
-            <:tab :if={@profile_type == :user} active={@active_tab == :starred} click="switch-tab" value="starred">
+            <:tab
+              :if={@profile_type == :user}
+              active={@active_tab == :starred}
+              click="switch-tab"
+              value="starred"
+            >
               Starred
             </:tab>
-            <:tab :if={@profile_type == :user} active={@active_tab == :learning} click="switch-tab" value="learning">
+            <:tab
+              :if={@profile_type == :user}
+              active={@active_tab == :learning}
+              click="switch-tab"
+              value="learning"
+            >
               Learning
             </:tab>
-            <:tab :if={@profile_type == :user} active={@active_tab == :activity} click="switch-tab" value="activity">
+            <:tab
+              :if={@profile_type == :user}
+              active={@active_tab == :activity}
+              click="switch-tab"
+              value="activity"
+            >
               Activity
             </:tab>
           </.tabs>
@@ -206,19 +230,19 @@ defmodule CyaneaWeb.UserLive.Show do
                   navigate={space_path(space)}
                   class="font-semibold text-primary hover:underline"
                 >
-                  <%= space.name %>
+                  {space.name}
                 </.link>
                 <.visibility_badge visibility={space.visibility} />
               </div>
               <.metadata_row icon="hero-star">
-                <%= space.star_count %>
+                {space.star_count}
               </.metadata_row>
             </div>
             <p :if={space.description} class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              <%= space.description %>
+              {space.description}
             </p>
             <div :if={space.tags != []} class="mt-2 flex flex-wrap gap-1">
-              <.badge :for={tag <- space.tags} color={:gray} size={:xs}><%= tag %></.badge>
+              <.badge :for={tag <- space.tags} color={:gray} size={:xs}>{tag}</.badge>
             </div>
           </div>
 
@@ -237,16 +261,16 @@ defmodule CyaneaWeb.UserLive.Show do
                   navigate={space_path(star.space)}
                   class="font-semibold text-primary hover:underline"
                 >
-                  <%= star.space.name %>
+                  {star.space.name}
                 </.link>
                 <.visibility_badge visibility={star.space.visibility} />
               </div>
               <.metadata_row icon="hero-star">
-                <%= star.space.star_count %>
+                {star.space.star_count}
               </.metadata_row>
             </div>
             <p :if={star.space.description} class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              <%= star.space.description %>
+              {star.space.description}
             </p>
           </div>
 
@@ -266,18 +290,18 @@ defmodule CyaneaWeb.UserLive.Show do
                   navigate={learn_space_path(progress.space)}
                   class="font-semibold text-primary hover:underline"
                 >
-                  <%= progress.space.name %>
+                  {progress.space.name}
                 </.link>
                 <p :if={progress.space.description} class="mt-0.5 text-sm text-slate-500">
-                  <%= progress.space.description %>
+                  {progress.space.description}
                 </p>
               </div>
               <.learning_status_badge status={progress.status} />
             </div>
             <div :if={progress.checkpoints_total > 0} class="mt-3">
               <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span><%= progress.checkpoints_passed %>/<%= progress.checkpoints_total %> checkpoints</span>
-                <span><%= checkpoint_pct(progress) %>%</span>
+                <span>{progress.checkpoints_passed}/{progress.checkpoints_total} checkpoints</span>
+                <span>{checkpoint_pct(progress)}%</span>
               </div>
               <div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-700">
                 <div
@@ -288,10 +312,10 @@ defmodule CyaneaWeb.UserLive.Show do
             </div>
             <div class="mt-2 text-xs text-slate-400">
               <span :if={progress.completed_at}>
-                Completed <%= Calendar.strftime(progress.completed_at, "%b %d, %Y") %>
+                Completed {Calendar.strftime(progress.completed_at, "%b %d, %Y")}
               </span>
               <span :if={!progress.completed_at && progress.started_at}>
-                Started <%= Calendar.strftime(progress.started_at, "%b %d, %Y") %>
+                Started {Calendar.strftime(progress.started_at, "%b %d, %Y")}
               </span>
             </div>
           </div>
@@ -310,7 +334,10 @@ defmodule CyaneaWeb.UserLive.Show do
         <div :if={@active_tab == :activity}>
           <.card>
             <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Recent activity</h3>
-            <div :if={@activity_events != []} class="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+            <div
+              :if={@activity_events != []}
+              class="mt-3 divide-y divide-slate-100 dark:divide-slate-700"
+            >
               <.activity_event :for={event <- @activity_events} event={event} />
             </div>
             <p :if={@activity_events == []} class="mt-3 text-sm text-slate-500">
@@ -319,6 +346,20 @@ defmodule CyaneaWeb.UserLive.Show do
           </.card>
         </div>
       </div>
+    </div>
+    """
+  end
+
+  attr :content, :string, default: nil
+
+  defp profile_readme(assigns) do
+    ~H"""
+    <div :if={@content && @content != ""} class="mb-6">
+      <.card>
+        <div class="prose prose-sm dark:prose-invert max-w-none">
+          {CyaneaWeb.Markdown.render(@content)}
+        </div>
+      </.card>
     </div>
     """
   end
@@ -333,11 +374,11 @@ defmodule CyaneaWeb.UserLive.Show do
         class="mx-auto lg:mx-0"
       />
       <h1 class="mt-4 text-xl font-bold text-slate-900 dark:text-white">
-        <%= @user.name || @user.username %>
+        {@user.name || @user.username}
       </h1>
-      <p class="text-sm text-slate-500">@<%= @user.username %></p>
+      <p class="text-sm text-slate-500">@{@user.username}</p>
       <p :if={@user.bio} class="mt-3 text-sm text-slate-600 dark:text-slate-400">
-        <%= @user.bio %>
+        {@user.bio}
       </p>
 
       <%!-- Follow button --%>
@@ -361,13 +402,17 @@ defmodule CyaneaWeb.UserLive.Show do
 
       <%!-- Follower/following counts --%>
       <div class="mt-4 flex items-center gap-4 text-sm text-slate-500">
-        <span><strong class="text-slate-900 dark:text-white"><%= @follower_count %></strong> followers</span>
-        <span><strong class="text-slate-900 dark:text-white"><%= @following_count %></strong> following</span>
+        <span>
+          <strong class="text-slate-900 dark:text-white">{@follower_count}</strong> followers
+        </span>
+        <span>
+          <strong class="text-slate-900 dark:text-white">{@following_count}</strong> following
+        </span>
       </div>
 
       <div class="mt-4 space-y-2 text-sm text-slate-500">
         <.metadata_row :if={@user.affiliation} icon="hero-building-library">
-          <%= @user.affiliation %>
+          {@user.affiliation}
         </.metadata_row>
       </div>
 
@@ -379,7 +424,7 @@ defmodule CyaneaWeb.UserLive.Show do
             navigate={~p"/#{org.slug}"}
             class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
           >
-            <%= org.name %>
+            {org.name}
           </.link>
         </div>
       </div>
@@ -398,26 +443,32 @@ defmodule CyaneaWeb.UserLive.Show do
         class="mx-auto lg:mx-0"
       />
       <h1 class="mt-4 text-xl font-bold text-slate-900 dark:text-white">
-        <%= @org.name %>
+        {@org.name}
       </h1>
-      <p class="text-sm text-slate-500">@<%= @org.slug %></p>
+      <p class="text-sm text-slate-500">@{@org.slug}</p>
       <div :if={@org_admin} class="mt-2 flex gap-2">
-        <.link navigate={~p"/organizations/#{@org.slug}/settings"} class="text-xs text-slate-500 hover:text-primary">
+        <.link
+          navigate={~p"/organizations/#{@org.slug}/settings"}
+          class="text-xs text-slate-500 hover:text-primary"
+        >
           <.icon name="hero-cog-6-tooth" class="h-4 w-4" /> Settings
         </.link>
-        <.link navigate={~p"/organizations/#{@org.slug}/members"} class="text-xs text-slate-500 hover:text-primary">
+        <.link
+          navigate={~p"/organizations/#{@org.slug}/members"}
+          class="text-xs text-slate-500 hover:text-primary"
+        >
           <.icon name="hero-user-group" class="h-4 w-4" /> Members
         </.link>
       </div>
       <p :if={@org.description} class="mt-3 text-sm text-slate-600 dark:text-slate-400">
-        <%= @org.description %>
+        {@org.description}
       </p>
       <div class="mt-4 space-y-2">
         <.metadata_row :if={@org.website} icon="hero-globe-alt">
-          <%= @org.website %>
+          {@org.website}
         </.metadata_row>
         <.metadata_row :if={@org.location} icon="hero-map-pin">
-          <%= @org.location %>
+          {@org.location}
         </.metadata_row>
       </div>
 
@@ -430,7 +481,7 @@ defmodule CyaneaWeb.UserLive.Show do
             class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
           >
             <.avatar name={membership.user.username} src={membership.user.avatar_url} size={:xs} />
-            <%= membership.user.username %>
+            {membership.user.username}
           </.link>
         </div>
       </div>

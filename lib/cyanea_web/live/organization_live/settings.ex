@@ -10,10 +10,14 @@ defmodule CyaneaWeb.OrganizationLive.Settings do
 
     cond do
       is_nil(org) ->
-        {:ok, socket |> put_flash(:error, "Organization not found.") |> redirect(to: ~p"/dashboard")}
+        {:ok,
+         socket |> put_flash(:error, "Organization not found.") |> redirect(to: ~p"/dashboard")}
 
       {:error, :unauthorized} == Organizations.authorize(user.id, org.id, "admin") ->
-        {:ok, socket |> put_flash(:error, "You don't have permission to manage this organization.") |> redirect(to: ~p"/#{org.slug}")}
+        {:ok,
+         socket
+         |> put_flash(:error, "You don't have permission to manage this organization.")
+         |> redirect(to: ~p"/#{org.slug}")}
 
       true ->
         {:ok, membership} = Organizations.authorize(user.id, org.id, "admin")
@@ -78,19 +82,28 @@ defmodule CyaneaWeb.OrganizationLive.Settings do
     <div class="mx-auto max-w-2xl">
       <.header>
         Organization settings
-        <:subtitle><%= @org.name %> &mdash; @<%= @org.slug %></:subtitle>
+        <:subtitle>{@org.name} &mdash; @{@org.slug}</:subtitle>
       </.header>
 
       <div class="mt-8 rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
         <.simple_form for={@form} phx-change="validate" phx-submit="save">
           <.input field={@form[:name]} type="text" label="Organization name" required />
           <.input field={@form[:description]} type="textarea" label="Description" rows="3" />
+          <div>
+            <.input field={@form[:readme]} type="textarea" label="README" rows="8" />
+            <p class="mt-1 text-sm text-slate-500">
+              Rendered on the organization profile. Supports Markdown.
+            </p>
+          </div>
           <.input field={@form[:website]} type="url" label="Website" />
           <.input field={@form[:location]} type="text" label="Location" />
           <.input field={@form[:avatar_url]} type="url" label="Avatar URL" />
 
           <:actions>
-            <.link navigate={~p"/#{@org.slug}"} class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400">
+            <.link
+              navigate={~p"/#{@org.slug}"}
+              class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400"
+            >
               Cancel
             </.link>
             <.button type="submit" phx-disable-with="Saving...">Save changes</.button>
@@ -99,7 +112,10 @@ defmodule CyaneaWeb.OrganizationLive.Settings do
       </div>
 
       <%!-- Danger zone --%>
-      <div :if={@membership.role == "owner"} class="mt-8 rounded-xl border border-red-200 bg-white p-8 dark:border-red-900 dark:bg-slate-800">
+      <div
+        :if={@membership.role == "owner"}
+        class="mt-8 rounded-xl border border-red-200 bg-white p-8 dark:border-red-900 dark:bg-slate-800"
+      >
         <h3 class="text-lg font-semibold text-red-600">Danger zone</h3>
         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
           Deleting an organization permanently removes all its data, including repositories and memberships.

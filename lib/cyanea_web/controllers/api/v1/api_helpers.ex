@@ -91,6 +91,7 @@ defmodule CyaneaWeb.Api.V1.ApiHelpers do
       username: user.username,
       name: user.name,
       bio: user.bio,
+      readme: user.readme,
       affiliation: user.affiliation,
       avatar_url: user.avatar_url,
       orcid_id: user.orcid_id,
@@ -105,6 +106,7 @@ defmodule CyaneaWeb.Api.V1.ApiHelpers do
       name: org.name,
       slug: org.slug,
       description: org.description,
+      readme: org.readme,
       verified: org.verified,
       inserted_at: format_datetime(org.inserted_at)
     }

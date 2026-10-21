@@ -4,7 +4,7 @@ defmodule CyaneaWeb do
   as controllers, components, channels, and so on.
   """
 
-  def static_paths, do: ~w(assets fonts images wasm favicon.ico robots.txt)
+  def static_paths, do: ~w(assets fonts images wasm favicon.ico favicon.svg apple-touch-icon.png robots.txt)
 
   def router do
     quote do

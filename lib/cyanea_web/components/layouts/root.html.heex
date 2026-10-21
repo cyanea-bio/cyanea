@@ -7,15 +7,18 @@
     <.live_title suffix=" · Cyanea">
       <%= assigns[:page_title] || "Cyanea" %>
     </.live_title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="icon" type="image/png" href={~p"/images/icon.png"} />
-    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#100E26" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href={~p"/favicon.ico"} sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href={~p"/favicon.svg"} />
+    <link rel="apple-touch-icon" href={~p"/apple-touch-icon.png"} />
+    <link rel="preload" href={~p"/fonts/inter-var.woff2"} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={~p"/fonts/bricolage-grotesque-var.woff2"} as="font" type="font/woff2" crossorigin />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="h-full bg-slate-50 text-slate-900 antialiased dark:bg-slate-900 dark:text-slate-100">
+  <body class="h-full bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
     <%= @inner_content %>
   </body>
 </html>

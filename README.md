@@ -106,7 +106,7 @@ Colours, fonts and radii come from the Cyanea design tokens, compiled into `asse
 
 ## Licence
 
-No licence file has been added to this repository yet.
+Apache License 2.0, the same as [Cyanea Labs](https://github.com/cyanea-bio/labs). See [LICENSE](LICENSE).
 
 ---
 

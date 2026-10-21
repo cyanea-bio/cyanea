@@ -1,4 +1,29 @@
 @import './tokens.css';
+
+/* Self-hosted variable fonts (SIL OFL, see priv/static/fonts) */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('/fonts/bricolage-grotesque-var.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-var.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
@@ -16,6 +41,11 @@
 
   body {
     @apply min-h-screen flex flex-col;
+  }
+
+  /* Page and section headings use the display face */
+  h1, h2 {
+    @apply font-display tracking-tighter;
   }
 }
 
@@ -117,7 +147,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, theme('colors.primary.400'), theme('colors.primary.DEFAULT'));
+  background: var(--gradient-brand);
   animation: loading-bar 2s ease-in-out infinite;
 }
 
@@ -128,4 +158,16 @@
   100% {
     transform: translateX(100%);
   }
+}
+
+/* Dark mode: the deep lavender (#5B3FD9) is the light-theme link colour; on the
+   abyss, text and icons in the primary colour switch to the glow lavender.
+   Solid primary backgrounds keep the deep shade so white text stays readable. */
+.dark .text-primary,
+.dark .text-primary-500,
+.dark .text-primary-600,
+.dark .text-primary-700,
+.dark .hover\:text-primary:hover,
+.dark .group:hover .group-hover\:text-primary {
+  color: theme('colors.glow.lavender');
 }

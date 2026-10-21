@@ -427,10 +427,42 @@ defmodule CyaneaWeb.CoreComponents do
   attr :name, :string, required: true
   attr :class, :string, default: nil
 
-  def icon(%{name: "hero-" <> _} = assigns) do
+  # The `heroicons` hex package ships the icons as function components
+  # (`Heroicons.cake/1`), not as the SVG files the Tailwind plugin looks for,
+  # so render through those components: "hero-cake-mini" -> Heroicons.cake(mini).
+  def icon(%{name: "hero-" <> name} = assigns) do
+    {base, style} =
+      Enum.find_value(["-solid", "-mini", "-micro"], {name, :outline}, fn suffix ->
+        if String.ends_with?(name, suffix),
+          do: {String.trim_trailing(name, suffix), String.to_atom(String.trim_leading(suffix, "-"))}
+      end)
+
+    assigns = assign(assigns, icon: icon_fun(base), style: style)
+
     ~H"""
-    <span class={[@name, @class]} />
+    <%= if @icon do %>
+      {apply(Heroicons, @icon, [
+        %{
+          __changed__: nil,
+          rest: %{class: ["inline-block shrink-0 align-middle", @class], "aria-hidden": "true"},
+          outline: @style == :outline,
+          solid: @style == :solid,
+          mini: @style == :mini,
+          micro: @style == :micro
+        }
+      ])}
+    <% else %>
+      <span class={[@name, @class]} />
+    <% end %>
     """
+  end
+
+  defp icon_fun(base) do
+    Code.ensure_loaded(Heroicons)
+    fun = base |> String.replace("-", "_") |> String.to_existing_atom()
+    if function_exported?(Heroicons, fun, 1), do: fun
+  rescue
+    ArgumentError -> nil
   end
 
   ## JS Commands

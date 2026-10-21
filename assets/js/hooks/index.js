@@ -10,6 +10,7 @@ import OutputRenderer from "./output_renderer.js"
 import CsvViewer from "./csv_viewer.js"
 import ImageViewer from "./image_viewer.js"
 import MarkdownViewer from "./markdown_viewer.js"
+import HeroField from "./hero_field.js"
 
 // Command palette keyboard shortcut
 const CommandPalette = {
@@ -23,32 +24,6 @@ const CommandPalette = {
   }
 }
 
-// Dark mode toggle
-const DarkMode = {
-  mounted() {
-    const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-    const savedTheme = localStorage.getItem("theme")
-
-    const setTheme = (theme) => {
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark")
-      } else {
-        document.documentElement.classList.remove("dark")
-      }
-    }
-
-    if (savedTheme) {
-      setTheme(savedTheme)
-    } else if (darkModeMediaQuery.matches) {
-      setTheme("dark")
-    }
-
-    this.handleEvent("toggle-dark-mode", () => {
-      const isDark = document.documentElement.classList.toggle("dark")
-      localStorage.setItem("theme", isDark ? "dark" : "light")
-    })
-  }
-}
 
 // Copy to clipboard
 const CopyToClipboard = {
@@ -83,7 +58,7 @@ const FileUpload = {
 
 export const Hooks = {
   CommandPalette,
-  DarkMode,
+  HeroField,
   CopyToClipboard,
   FileUpload,
   SequenceViewer,

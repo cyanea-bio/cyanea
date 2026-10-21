@@ -1,14 +1,15 @@
 import { loadWasm, Seq } from "../wasm.js"
 
 // Color scheme for nucleotides
+// (brand nucleotide pastels from design/tokens.json, ink text on top)
 const COLORS = {
-  A: { fg: "#15803d", bg: "#dcfce7" }, // green
-  T: { fg: "#dc2626", bg: "#fee2e2" }, // red
-  U: { fg: "#dc2626", bg: "#fee2e2" }, // red (RNA)
-  G: { fg: "#d97706", bg: "#fef3c7" }, // amber
-  C: { fg: "#2563eb", bg: "#dbeafe" }, // blue
+  A: { fg: "#100E26", bg: "#8EE6B5" }, // mint
+  T: { fg: "#100E26", bg: "#FFA3B1" }, // coral
+  U: { fg: "#100E26", bg: "#FFA3B1" }, // coral (RNA)
+  G: { fg: "#100E26", bg: "#FFDB7A" }, // butter
+  C: { fg: "#100E26", bg: "#9DBEFF" }, // periwinkle
 }
-const DEFAULT_COLOR = { fg: "#475569", bg: "#f1f5f9" } // slate
+const DEFAULT_COLOR = { fg: "#5E5C7E", bg: "#EFEDF9" } // neutral
 
 const CHARS_PER_LINE = 80
 const POS_INTERVAL = 10

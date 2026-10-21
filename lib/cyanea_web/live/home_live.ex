@@ -21,8 +21,9 @@ defmodule CyaneaWeb.HomeLive do
         <img src={~p"/images/mascot.png"} alt="Cyanea mascot" class="mx-auto h-24 w-24 drop-shadow-lg" />
       </div>
 
-      <h1 class="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
-        GitHub for Life Sciences
+      <h1 class="font-display text-4xl font-extrabold tracking-[-0.045em] text-slate-950 sm:text-6xl dark:text-white">
+        The system of record for
+        <span class="bg-[linear-gradient(90deg,#0B9CC4,#5B3FD9_55%,#D63F8C)] bg-clip-text text-transparent dark:bg-[linear-gradient(90deg,#8BEBFF,#C3B3FF_50%,#FFB3DA)]">computational biology.</span>
       </h1>
 
       <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-400">

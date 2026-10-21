@@ -5,6 +5,7 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import {Hooks} from "./hooks/index.js"
+import {initScheme} from "./scheme.js"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
@@ -35,3 +36,5 @@ window.liveSocket = liveSocket
 // >> cyanea.Phylo.newickInfo("((A:0.1,B:0.2):0.3,C:0.4);")
 import {loadWasm, Seq, Align, Phylo, Stats, ML, Chem, StructBio, IO, Omics, Core} from "./wasm.js"
 window.cyanea = { ready: loadWasm(), Seq, Align, Phylo, Stats, ML, Chem, StructBio, IO, Omics, Core }
+
+initScheme()

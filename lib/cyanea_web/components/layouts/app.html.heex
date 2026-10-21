@@ -1,38 +1,63 @@
-<header class="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-  <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center gap-8">
-      <a href={~p"/"} class="flex items-center gap-2" aria-label="Cyanea home">
-        <img src={~p"/images/brand/mark-colour.svg"} alt="" class="h-9 w-9 dark:hidden" />
-        <img src={~p"/images/brand/mark-colour-dark.svg"} alt="" class="hidden h-9 w-9 dark:block" />
-        <span class="font-display text-[1.375rem] font-bold leading-none tracking-[-0.035em] text-slate-950 dark:text-white">cyanea</span>
-      </a>
+<header class="sticky top-0 z-50 border-b border-slate-200 bg-white/85 backdrop-blur-lg dark:border-slate-800 dark:bg-slate-950/85">
+  <nav class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:gap-5 lg:px-8" aria-label="Main">
+    <a href={~p"/"} class="group flex shrink-0 items-center gap-2" aria-label="Cyanea home">
+      <img src={~p"/images/brand/mark-colour.svg"} alt="" class="h-9 w-9 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:-rotate-3 dark:hidden" />
+      <img src={~p"/images/brand/mark-colour-dark.svg"} alt="" class="hidden h-9 w-9 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:-rotate-3 dark:block" />
+      <span class="font-display text-[1.45rem] font-bold leading-none tracking-[-0.035em] text-slate-950 dark:text-white">cyanea</span>
+    </a>
 
-      <div class="hidden items-center gap-6 md:flex">
-        <a href={~p"/explore"} class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+    <ul class="hidden items-center gap-0.5 md:flex">
+      <li :if={@current_user}>
+        <a href={~p"/dashboard"} class="inline-flex items-center gap-1.5 rounded-[10px] px-2.5 py-1.5 text-[0.9375rem] font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white">
+          <.icon name="hero-squares-2x2" class="h-4 w-4 opacity-75" /> Dashboard
+        </a>
+      </li>
+      <li>
+        <a href={~p"/explore"} class="inline-flex items-center gap-1.5 rounded-[10px] px-2.5 py-1.5 text-[0.9375rem] font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white">
+          <svg class="h-4 w-4 opacity-75" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5z" /></svg>
           Explore
         </a>
-      </div>
-    </div>
+      </li>
+      <li>
+        <a href="https://cyanea.bio/learn" class="inline-flex items-center gap-1.5 rounded-[10px] px-2.5 py-1.5 text-[0.9375rem] font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white">
+          <svg class="h-4 w-4 opacity-75" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3L1 9l11 6 11-6-11-6zM5 13.18v4.82C5 20 8.13 21 12 21s7-1 7-3v-4.82M21 9v8" /></svg>
+          Learn
+        </a>
+      </li>
+      <li>
+        <a href="https://docs.cyanea.bio" class="inline-flex items-center gap-1.5 rounded-[10px] px-2.5 py-1.5 text-[0.9375rem] font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white">
+          <svg class="h-4 w-4 opacity-75" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" /></svg>
+          Docs
+        </a>
+      </li>
+    </ul>
 
-    <div class="flex items-center gap-4">
-      <!-- Search -->
+    <div class="ml-auto flex items-center gap-2">
       <button
         type="button"
-        class="hidden h-9 w-64 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 transition hover:border-slate-300 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 sm:flex"
+        class="hidden h-10 w-60 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 transition hover:border-primary-400 hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-primary-500 lg:flex"
         phx-click={JS.dispatch("open-command-palette")}
       >
         <.icon name="hero-magnifying-glass" class="h-4 w-4" />
-        <span class="flex-1 text-left">Search...</span>
+        <span class="flex-1 truncate text-left">Search spaces, datasets</span>
         <.kbd>⌘K</.kbd>
+      </button>
+      <button
+        type="button"
+        class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900 lg:hidden"
+        phx-click={JS.dispatch("open-command-palette")}
+        aria-label="Search"
+      >
+        <.icon name="hero-magnifying-glass" class="h-5 w-5" />
       </button>
 
       <%= if @current_user do %>
-        <a href={~p"/notifications"} class="relative text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+        <a href={~p"/notifications"} class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900" aria-label="Notifications">
           <.icon name="hero-bell" class="h-5 w-5" />
         </a>
 
-        <a href={~p"/new"} class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700">
-          New
+        <a href={~p"/new"} class="hidden items-center gap-1.5 rounded-xl bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-primary dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-primary-400 sm:inline-flex">
+          <.icon name="hero-plus-mini" class="h-4 w-4" /> New
         </a>
 
         <%!-- User dropdown --%>
@@ -51,38 +76,111 @@
           <:item separator={true} />
           <:item navigate={~p"/#{@current_user.username}"} icon="hero-user">Your profile</:item>
           <:item navigate={~p"/dashboard"} icon="hero-squares-2x2">Dashboard</:item>
+          <:item navigate={~p"/new"} icon="hero-plus">New space</:item>
           <:item navigate={~p"/settings"} icon="hero-cog-6-tooth">Settings</:item>
           <:item separator={true} />
           <:item href={~p"/auth/logout"} method="delete" icon="hero-arrow-right-on-rectangle">Sign out</:item>
         </.dropdown_menu>
       <% else %>
-        <a href={~p"/auth/login"} class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+        <a href={~p"/auth/login"} class="hidden rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white sm:inline-flex">
           Sign in
         </a>
-        <a href={~p"/auth/register"} class="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700">
+        <a href={~p"/auth/register"} class="inline-flex rounded-xl bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-primary dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-primary-400">
           Sign up
         </a>
       <% end %>
+
+      <button
+        type="button"
+        class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900 md:hidden"
+        phx-click={JS.toggle(to: "#mobile-nav")}
+        aria-label="Menu"
+        aria-controls="mobile-nav"
+      >
+        <.icon name="hero-bars-3" class="h-5 w-5" />
+      </button>
     </div>
   </nav>
+
+  <div id="mobile-nav" class="hidden border-t border-slate-200 bg-white px-4 pb-4 pt-2 dark:border-slate-800 dark:bg-slate-950 md:hidden">
+    <a :if={@current_user} href={~p"/dashboard"} class="flex items-center gap-3 border-b border-slate-100 py-3 font-medium text-slate-800 dark:border-slate-900 dark:text-slate-200">
+      <.icon name="hero-squares-2x2" class="h-5 w-5" /> Dashboard
+    </a>
+    <a href={~p"/explore"} class="flex items-center gap-3 border-b border-slate-100 py-3 font-medium text-slate-800 dark:border-slate-900 dark:text-slate-200">
+      <.icon name="hero-globe-alt" class="h-5 w-5" /> Explore
+    </a>
+    <a href="https://cyanea.bio/learn" class="flex items-center gap-3 border-b border-slate-100 py-3 font-medium text-slate-800 dark:border-slate-900 dark:text-slate-200">
+      <.icon name="hero-academic-cap" class="h-5 w-5" /> Learn
+    </a>
+    <a href="https://docs.cyanea.bio" class="flex items-center gap-3 border-b border-slate-100 py-3 font-medium text-slate-800 dark:border-slate-900 dark:text-slate-200">
+      <.icon name="hero-book-open" class="h-5 w-5" /> Docs
+    </a>
+    <a :if={!@current_user} href={~p"/auth/login"} class="flex items-center gap-3 py-3 font-medium text-slate-800 dark:text-slate-200">
+      <.icon name="hero-arrow-right-on-rectangle" class="h-5 w-5" /> Sign in
+    </a>
+    <a :if={@current_user} href={~p"/new"} class="flex items-center gap-3 py-3 font-medium text-slate-800 dark:text-slate-200">
+      <.icon name="hero-plus" class="h-5 w-5" /> New space
+    </a>
+  </div>
 </header>
 
-<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+<main class={["mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8", assigns[:full_bleed] && "py-0", !assigns[:full_bleed] && "py-8"]}>
   <.flash_group flash={@flash} />
   <%= @inner_content %>
 </main>
 
-<footer class="relative mt-auto border-t border-slate-200 py-8 dark:border-slate-800">
-  <div aria-hidden="true" class="absolute inset-x-0 -top-px h-0.5 bg-[linear-gradient(90deg,#8BE4F5,#B9A6FF_38%,#FFA6D2_70%,#D6F98F)]"></div>
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between text-sm text-slate-500">
-      <p class="flex items-center gap-2">
-        <img src={~p"/favicon.svg"} alt="" class="h-5 w-5" />
-        &copy; <%= DateTime.utc_now().year %> Cyanea. Open source.
-      </p>
-      <div class="flex items-center gap-6">
-        <a href="https://github.com/cyanea-bio/cyanea" class="hover:text-slate-900 dark:hover:text-white">GitHub</a>
-        <a href="/docs" class="hover:text-slate-900 dark:hover:text-white">Docs</a>
+<footer class="mt-16 bg-abyss text-abyss-body">
+  <div aria-hidden="true" class="h-[3px] bg-[linear-gradient(90deg,#8BE4F5,#B9A6FF_38%,#FFA6D2_70%,#D6F98F)]"></div>
+  <div class="mx-auto max-w-7xl px-4 pb-8 pt-12 sm:px-6 lg:px-8">
+    <div class="grid gap-10 lg:grid-cols-[280px_1fr] lg:gap-16">
+      <div class="flex flex-col gap-4">
+        <a href={~p"/"} class="flex items-center gap-2" aria-label="Cyanea home">
+          <img src={~p"/images/brand/mark-colour-dark.svg"} alt="" class="h-10 w-10" />
+          <span class="font-display text-[1.7rem] font-bold leading-none tracking-[-0.035em] text-abyss-foam">cyanea</span>
+        </a>
+        <p class="text-sm leading-relaxed text-abyss-mist">
+          The system of record for computational biology: notebooks, datasets and protocols that stay versioned, provenance-tracked and re-runnable.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-8 text-sm sm:grid-cols-4">
+        <nav class="flex flex-col gap-2.5" aria-label="Platform">
+          <span class="mb-1 border-b border-abyss-line pb-2 font-mono text-xs uppercase tracking-[0.08em] text-glow-cyan">Platform</span>
+          <a href={~p"/explore"} class="hover:text-abyss-foam">Explore</a>
+          <a :if={@current_user} href={~p"/dashboard"} class="hover:text-abyss-foam">Dashboard</a>
+          <a href={~p"/new"} class="hover:text-abyss-foam">New space</a>
+          <a :if={@current_user} href={~p"/settings"} class="hover:text-abyss-foam">Settings</a>
+        </nav>
+        <nav class="flex flex-col gap-2.5" aria-label="Learn">
+          <span class="mb-1 border-b border-abyss-line pb-2 font-mono text-xs uppercase tracking-[0.08em] text-glow-lavender">Learn</span>
+          <a href="https://cyanea.bio/learn" class="hover:text-abyss-foam">All lessons</a>
+          <a href="https://cyanea.bio/learn#curriculum" class="hover:text-abyss-foam">Learning paths</a>
+          <a href="https://cyanea.bio/learn#catalog" class="hover:text-abyss-foam">Playgrounds</a>
+        </nav>
+        <nav class="flex flex-col gap-2.5" aria-label="Build">
+          <span class="mb-1 border-b border-abyss-line pb-2 font-mono text-xs uppercase tracking-[0.08em] text-glow-pink">Build</span>
+          <a href="https://docs.cyanea.bio" class="hover:text-abyss-foam">Documentation</a>
+          <a href="https://docs.cyanea.bio/api" class="hover:text-abyss-foam">REST API</a>
+          <a href="https://docs.cyanea.bio/getting-started/cli" class="hover:text-abyss-foam">CLI</a>
+          <a href="https://github.com/cyanea-bio/cyanea" class="hover:text-abyss-foam">Source on GitHub</a>
+        </nav>
+        <nav class="flex flex-col gap-2.5" aria-label="Cyanea">
+          <span class="mb-1 border-b border-abyss-line pb-2 font-mono text-xs uppercase tracking-[0.08em] text-glow-lime">Cyanea</span>
+          <a href="https://cyanea.bio" class="hover:text-abyss-foam">cyanea.bio</a>
+          <a href="https://cyanea.bio/pricing" class="hover:text-abyss-foam">Pricing</a>
+          <a href="https://cyanea.bio/status" class="hover:text-abyss-foam">What's live</a>
+          <a href="https://cyanea.bio/privacy" class="hover:text-abyss-foam">Privacy</a>
+          <a href="https://cyanea.bio/terms" class="hover:text-abyss-foam">Terms</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-abyss-line pt-6 text-xs text-abyss-mist">
+      <p>&copy; <%= DateTime.utc_now().year %> Cyanea. Named for <i>Cyanea capillata</i>, the lion's mane jellyfish.</p>
+      <div id="scheme-switch" phx-update="ignore" class="inline-flex gap-0.5 rounded-full border border-abyss-line p-[3px]" role="group" aria-label="Colour scheme">
+        <button :for={{value, label} <- [{"system", "System"}, {"light", "Light"}, {"dark", "Dark"}]} type="button" data-scheme={value} aria-pressed="false" class="rounded-full px-3 py-1 text-[0.8125rem] font-medium text-abyss-mist transition hover:text-abyss-foam aria-pressed:bg-abyss-2 aria-pressed:text-abyss-foam aria-pressed:shadow-[inset_0_0_0_1px_#2E2B57]">
+          <%= label %>
+        </button>
       </div>
     </div>
   </div>
